@@ -11,7 +11,7 @@ export interface SiteProduct {
   born: string; name: string; url: string; cat: string; slug: string;
   tagline: string; cost: string; stamp: [string, string];
 }
-export interface Grave { died: string; name: string; cause: string; forward: string }
+export interface Grave { died: string; name: string; slug?: string; cause: string; forward: string }
 export interface Gene { slug: string; d: string; status: [string, string] }
 export interface BookLine { p: string; e: string; d: string; c: string; n: string }
 export interface SiteState {
@@ -20,13 +20,22 @@ export interface SiteState {
   products: SiteProduct[];
   graveyard: Grave[];
   genes: Gene[];
+  gestation?: number | null;
   books: BookLine[];
 }
 export interface ProofSummary {
   days_proven: number;
   days_anchored: number;
+  latest_anchored?: { day: string; solana_sig: string; solana_explorer: string } | null;
   latest: { day: string; chained_root: string; leaf_count: number; solana_sig: string | null; solana_explorer: string | null } | null;
 }
+
+export interface BooksMonth { month: string; cost_usd: number; revenue_usd: number; donations_usd: number }
+export interface BooksBirth { name: string; slug: string; born: string; status: string; cost: string }
+export interface BooksDonation { date: string; name: string; amount: string; product: string }
+export interface BooksProof { day: string; leaf_count: number; chained_root: string; solana_sig: string | null; solana_explorer: string | null }
+export interface BooksData { months: BooksMonth[]; births: BooksBirth[]; donations: BooksDonation[]; proofs: BooksProof[] }
+export interface LawVerdict { date: string; idea: string; verdict: string; score: number | null; reasoning: string }
 
 export async function getSiteState(): Promise<SiteState | null> {
   try {
@@ -66,4 +75,27 @@ export function expandForScaleTest(state: SiteState, n: number): SiteState {
     stamp: ['hold', 'scale test'],
   }));
   return { ...state, products: [...state.products, ...fake] };
+}
+
+
+export async function getBooksData(): Promise<BooksData | null> {
+  // #296 T2: the full public books, aggregated in Postgres, cached 60s.
+  try {
+    const r = await fetch(`${RAILWAY}/books/data`, { next: { revalidate: 60 } });
+    if (!r.ok) return null;
+    return (await r.json()) as BooksData;
+  } catch {
+    return null;
+  }
+}
+
+export async function getLawVerdicts(): Promise<LawVerdict[] | null> {
+  // #296 T5: every ethics verdict, unedited, dated.
+  try {
+    const r = await fetch(`${RAILWAY}/site/law`, { next: { revalidate: 300 } });
+    if (!r.ok) return null;
+    return ((await r.json()) as { verdicts: LawVerdict[] }).verdicts || [];
+  } catch {
+    return null;
+  }
 }

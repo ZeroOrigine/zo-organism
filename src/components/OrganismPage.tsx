@@ -27,7 +27,7 @@ const MINDS = [
 const TIERS = [
   { amt: 5, n: 'Witness', d: 'Your name in the supporter ledger. You watched a machine learn to keep books.' },
   { amt: 25, n: 'Godparent', d: 'Your name on the next product born, printed on its birth certificate.' },
-  { amt: 85, n: 'Gene patron', d: 'Birth certificate plus read access to the genome: the code the dead paid forward.' },
+  { amt: 85, n: 'Gene patron', d: 'Birth certificate plus read access to the genome: the code the dead paid forward. After your support is verified against the ledger, your GitHub account receives a read-only invite to the gene repositories, and nothing else.' },
   { amt: 210, n: 'Founding witness', d: 'All of the above, on the certificate of a product you help choose from the approved queue.' },
 ];
 
@@ -228,9 +228,9 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
     const gx = gn.getContext('2d'); if (!gx) return;
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const DPR = Math.min(2, window.devicePixelRatio || 1);
-    let GW = 0; let GH = 0; let raf = 0; let stopped = false; let gsel = -1;
+    let GW = 0; let GH = 0; let raf = 0; let stopped = false; let gsel = -1; let psel = -1;
     interface GN { t: 'gene' | 'prod'; n: string; hold?: boolean; x: number; y: number; vx: number; vy: number }
-    let gnodes: GN[] = []; let glinks: Array<{ a: number; b: number }> = [];
+    let gnodes: GN[] = []; let glinks: Array<{ a: number; b: number; held?: boolean }> = [];
     const genes = state.genes; const prods = state.products.slice(0, 10);
     const gsize = () => { GW = gn.clientWidth; GH = gn.clientHeight; gn.width = GW * DPR; gn.height = GH * DPR; gx.setTransform(DPR, 0, 0, DPR, 0, 0); };
     const gbuild = () => {
@@ -242,7 +242,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       prods.forEach((p, i) => {
         const idx = gnodes.length;
         gnodes.push({ t: 'prod', n: p.name, x: GW * (0.08 + 0.09 * i), y: GH * (0.68 + ((i % 3) * 0.09)), vx: 0, vy: 0 });
-        genes.forEach((g, gi) => { if (g.status[0] !== 'hold') glinks.push({ a: gi, b: idx }); });
+        genes.forEach((g, gi) => { glinks.push({ a: gi, b: idx, held: g.status[0] === 'hold' }); });
       });
     };
     const gdraw = () => {
@@ -292,37 +292,64 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       glinks.forEach((l) => {
         const a = gnodes[l.a]; const b = gnodes[l.b];
         const lit = gsel >= 0 && l.a === gsel;
-        gx.strokeStyle = lit ? 'rgba(61,255,158,.5)' : 'rgba(233,228,214,.10)';
+        // #296 T6(a): a held gene is TETHERED, dashed — held, not orphaned
+        gx.setLineDash(l.held ? [3, 5] : []);
+        gx.strokeStyle = lit ? 'rgba(61,255,158,.5)'
+          : l.held ? 'rgba(232,180,76,.22)' : 'rgba(233,228,214,.10)';
         gx.lineWidth = lit ? 1.4 : 1;
         gx.beginPath(); gx.moveTo(a.x, a.y); gx.lineTo(b.x, b.y); gx.stroke();
+        gx.setLineDash([]);
       });
       gnodes.forEach((n, i) => {
         if (n.t === 'gene') {
           gx.fillStyle = n.hold ? '#E8B44C' : '#3DFF9E';
           gx.beginPath(); gx.arc(n.x, n.y, gsel === i ? 8 : 6, 0, 7); gx.fill();
-          gx.fillStyle = 'rgba(233,228,214,.9)'; gx.font = '11px IBM Plex Mono, monospace'; gx.textAlign = 'center';
-          // W9: when another gene sits within 90px (long slugs are ~100px of
-          // 11px mono), this label drops BELOW its node so two labels can
+          gx.fillStyle = 'rgba(233,228,214,.9)'; gx.font = '13px IBM Plex Mono, monospace'; gx.textAlign = 'center';
+          // W9: when another gene sits within 140px (long slugs run ~130px of
+          // 13px mono after the T4 type pass), this label drops BELOW its node so
           // never overprint into noise even at mobile widths
           const crowded = gnodes.some((m, j) => j < i && m.t === 'gene'
-            && (m.x - n.x) ** 2 + (m.y - n.y) ** 2 < 90 * 90);
+            && (m.x - n.x) ** 2 + (m.y - n.y) ** 2 < 140 * 140);
           gx.fillText(n.n, n.x, crowded ? n.y + 22 : n.y - 14);
         } else {
-          gx.fillStyle = 'rgba(233,228,214,.5)'; gx.beginPath(); gx.arc(n.x, n.y, 3.4, 0, 7); gx.fill();
+          const on = psel === i;
+          gx.fillStyle = on ? 'rgba(233,228,214,.95)' : 'rgba(233,228,214,.5)';
+          gx.beginPath(); gx.arc(n.x, n.y, on ? 4.6 : 3.4, 0, 7); gx.fill();
+          if (on) {
+            gx.fillStyle = 'rgba(233,228,214,.95)'; gx.font = '13px IBM Plex Mono, monospace'; gx.textAlign = 'center';
+            gx.fillText(n.n, n.x, n.y - 12);
+          }
         }
       });
       if (!rm) raf = requestAnimationFrame(gdraw);
     };
     const onClick = (ev: MouseEvent) => {
-      const r = gn.getBoundingClientRect(); const mx = ev.clientX - r.left; const my = ev.clientY - r.top; let hit = -1;
-      gnodes.forEach((n, i) => { if (n.t === 'gene') { const d = (n.x - mx) ** 2 + (n.y - my) ** 2; if (d < 400) hit = i; } });
+      // #296 T6(c): a tap names what it touches — genes trace their children,
+      // product dots show their name (this is the touch path too: taps arrive
+      // as clicks on mobile)
+      const r = gn.getBoundingClientRect(); const mx = ev.clientX - r.left; const my = ev.clientY - r.top;
+      let hit = -1; let phit = -1;
+      gnodes.forEach((n, i) => {
+        const d = (n.x - mx) ** 2 + (n.y - my) ** 2;
+        if (n.t === 'gene' && d < 400) hit = i;
+        if (n.t === 'prod' && d < 300) phit = i;
+      });
       gsel = hit === gsel ? -1 : hit;
+      psel = phit === psel ? -1 : phit;
       if (rm) gdraw();
     };
+    const onGMove = (ev: MouseEvent) => {
+      const r = gn.getBoundingClientRect(); const mx = ev.clientX - r.left; const my = ev.clientY - r.top;
+      let phit = -1;
+      gnodes.forEach((n, i) => { if (n.t === 'prod' && (n.x - mx) ** 2 + (n.y - my) ** 2 < 300) phit = i; });
+      if (phit !== psel) { psel = phit; if (rm) gdraw(); }
+      gn.style.cursor = phit >= 0 || gnodes.some((n, i) => n.t === 'gene' && (n.x - mx) ** 2 + (n.y - my) ** 2 < 400) ? 'pointer' : 'default';
+    };
     const onResize = () => { gsize(); gbuild(); if (rm) gdraw(); };
-    gn.addEventListener('click', onClick); window.addEventListener('resize', onResize);
+    gn.addEventListener('click', onClick); gn.addEventListener('mousemove', onGMove);
+    window.addEventListener('resize', onResize);
     gsize(); gbuild(); if (rm) { gdraw(); } else { raf = requestAnimationFrame(gdraw); }
-    return () => { stopped = true; cancelAnimationFrame(raf); gn.removeEventListener('click', onClick); window.removeEventListener('resize', onResize); };
+    return () => { stopped = true; cancelAnimationFrame(raf); gn.removeEventListener('click', onClick); gn.removeEventListener('mousemove', onGMove); window.removeEventListener('resize', onResize); };
   }, [state.genes, state.products]);
 
   // ---------- support: the EXISTING donation rails, new skin only ----------
@@ -359,7 +386,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
         <span className="links">
           <a href="#hero">Organism</a><a href="#minds">Minds</a><a href="#births">Births</a>
           <a href="#graveyard">Graveyard</a><a href="#genome">Genome</a><a href="#books">Books</a>
-          <a href="#law">Law</a><a href="#support">Support</a>
+          <a href="/law">Law</a><a href="#support">Support</a>
         </span>
       </nav>
 
@@ -371,7 +398,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
             <div className="kicker">An autonomous software organism · alive since March 2026</div>
             <h1>Everything here <em>begins at zero</em> and earns its existence.</h1>
             <p>Eight AI minds research, judge, build, test, launch, and retire real software products.
-              One human holds the constitution. Every number on this page is read from the machine&apos;s own books.</p>
+              The constitution stands above the machine. Every number on this page is read from the machine&apos;s own books.</p>
             <div className="hint">touch the organism · every node is a real organ · every satellite is a live product</div>
           </div>
           <div className="vitals" id="vitals" role="list" aria-label="Vital signs">
@@ -431,10 +458,10 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
           <div className="ledger"><table>
             <thead><tr><th>Died</th><th>Product</th><th>Cause of death, in plain words</th><th>Paid forward</th></tr></thead>
             <tbody>
-              {state.graveyard.map((g) => (
+              {state.graveyard.slice(0, 3).map((g) => (
                 <tr key={g.name}>
                   <td className="mono">{g.died}</td><td>{g.name}</td><td>{g.cause}</td>
-                  <td style={{ color: 'var(--life)', fontFamily: 'var(--mono)', fontSize: 12 }}>{g.forward}</td>
+                  <td style={{ color: 'var(--life)', fontFamily: 'var(--mono)', fontSize: 13 }}>{g.forward}</td>
                 </tr>
               ))}
               {state.graveyard.length === 0 && (
@@ -442,18 +469,22 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
               )}
             </tbody>
           </table></div>
-          <p className="caveat">Sunset rule: the machine may propose a death. Only the founder may approve one, with a written
+          <Link className="viewall" href="/graveyard">View the full graveyard · {state.graveyard.length} on record</Link>
+          <p className="caveat">Sunset rule: the machine may propose a death; a death requires approval from outside the machine, with a written
             reason. Ideas killed before birth (ethics vetoes, adversary rejections) are recorded in the Law section; they
             cost thought, not treasury.</p>
         </section>
 
         <section id="genome">
           <div className="folio"><span className="no">FOLIO 04</span><h2>The genome</h2><span className="note">what the dead teach the unborn</span></div>
-          <p style={{ maxWidth: '62ch', color: 'var(--bone-dim)', marginBottom: 22, fontSize: 15.5 }}>
+          <p style={{ maxWidth: '62ch', color: 'var(--bone-dim)', marginBottom: 22, fontSize: 18 }}>
             Proven code and hard lessons are harvested as genes. A gene extracted from one product flows into every
             product born after it. Touch the network: genes in green, products in bone, connections are inheritance.</p>
           <canvas id="genome-net" ref={geneCv} />
-          <div className="gene-legend"><span className="g">● gene</span> &nbsp; <span className="p">● product</span> &nbsp; <span className="b">● gene under review</span> &nbsp; · drag to stir, hover to read, click a gene to trace its children</div>
+          <div className="gene-legend"><span className="g">● gene</span> &nbsp; <span className="p">● product</span> &nbsp; <span className="b">● gene under review</span> &nbsp; · drag to stir, hover or tap to read, click a gene to trace its children</div>
+          {typeof state.gestation === 'number' && (
+            <div className="gene-legend">a capability must prove itself in repeated builds before it graduates into the genome · in gestation: <span className="g">{state.gestation}</span></div>
+          )}
           <div className="ledger" style={{ marginTop: 22 }}><table>
             <thead><tr><th>Gene</th><th>What it carries</th><th>Status</th></tr></thead>
             <tbody>
@@ -472,7 +503,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
         </section>
 
         <section id="books">
-          <div className="folio"><span className="no">FOLIO 05</span><h2>The books are open</h2><span className="note">founder is a Chartered Accountant · it shows</span></div>
+          <div className="folio"><span className="no">FOLIO 05</span><h2>The books are open</h2><span className="note">double-entry, kept in public</span></div>
           <div className="ledger"><table>
             <thead><tr><th>Period</th><th>Entry</th><th className="num">Debit</th><th className="num">Credit</th><th>Note</th></tr></thead>
             <tbody>
@@ -489,13 +520,14 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
               <div className="t">Proof of books · anchored on a public chain</div>
               <div className="root">day {proof.latest.day} · {proof.days_proven} days proven · root {proof.latest.chained_root.slice(0, 16)}&hellip;{proof.latest.chained_root.slice(-8)}</div>
               <div>
-                {proof.latest.solana_explorer
-                  ? <a href={proof.latest.solana_explorer} rel="noopener noreferrer" target="_blank">verify this root on Solana</a>
+                {proof.latest_anchored
+                  ? <a href={proof.latest_anchored.solana_explorer} rel="noopener noreferrer" target="_blank">verify the {proof.latest_anchored.day} root on Solana</a>
                   : <span style={{ color: 'var(--bone-faint)' }}>anchoring to a public chain: in progress</span>}
                 {' '}· only hashes leave the building, never your data
               </div>
             </div>
           )}
+          <Link className="viewall" href="/books">View the full books</Link>
           <p className="caveat">Every section on this page renders from one live payload read from the machine&apos;s own
             state endpoint, so new births, deaths, genes, and entries appear here with no design change. The zero stays
             on the page until it is not zero.</p>
@@ -506,7 +538,8 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
           <div className="law-quote"><p>&ldquo;A parent uses this after putting their children to bed. They are tired, they are trusting, and they are not a conversion metric.&rdquo;</p><div className="src">ETHICS MIND · from a real review, unedited</div></div>
           <div className="law-quote"><p>&ldquo;Refused. The product would profit from urgency it manufactures. We do not build fear machines.&rdquo;</p><div className="src">ETHICS MIND · veto, recorded and binding</div></div>
           <p className="caveat">The Ethics Mind holds veto power over every birth. Its verdicts cannot be edited after the fact.
-            The founder can stop the machine; the machine cannot silence its own conscience.</p>
+            The machine can be stopped from outside itself; it cannot silence its own conscience.</p>
+          <Link className="viewall" href="/law">Read the law · every verdict, unedited</Link>
         </section>
 
         <section id="support">

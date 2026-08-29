@@ -3,7 +3,7 @@
 
   :root{
     --void:#0A0F0D; --void-2:#0E1512; --void-3:#131C17;
-    --bone:#E9E4D6; --bone-dim:#9AA69C; --bone-faint:#5C6862;
+    --bone:#E9E4D6; --bone-dim:#9AA69C; --bone-faint:#8C9A90;
     --life:#3DFF9E; --gold:#E8B44C; --blood:#E05252;
     --rule:rgba(233,228,214,.13); --rule-strong:rgba(233,228,214,.28);
     --serif:'IBM Plex Serif',Georgia,serif; --sans:'IBM Plex Sans',system-ui,sans-serif;
@@ -25,7 +25,7 @@
   #birthlog .ln{opacity:0;transform:translateY(4px);transition:all .3s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #birthlog .ln.on{opacity:1;transform:none}
   #birthlog .ok{color:var(--life)} #birthlog .money{color:var(--gold)}
-  #skipbirth{position:fixed;bottom:24px;right:24px;z-index:101;background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);font-family:var(--mono);font-size:12px;padding:8px 16px;cursor:pointer;border-radius:2px}
+  #skipbirth{position:fixed;bottom:24px;right:24px;z-index:101;background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);font-family:var(--mono);font-size:13px;padding:8px 16px;cursor:pointer;border-radius:2px}
   #skipbirth:hover{color:var(--bone);border-color:var(--bone)}
   @media (prefers-reduced-motion:reduce){#genesis,#skipbirth{display:none!important}.zero{animation:none}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
@@ -34,49 +34,49 @@
   nav .wordmark{font-family:var(--serif);font-size:17px;letter-spacing:.4px;white-space:nowrap}
   nav .wordmark b{color:var(--life);font-weight:600}
   nav .links{display:flex;gap:18px;margin-left:auto;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  nav .links a{font-family:var(--mono);font-size:11.5px;letter-spacing:1.1px;color:var(--bone-dim);text-transform:uppercase;white-space:nowrap}
+  nav .links a{font-family:var(--mono);font-size:13px;letter-spacing:1.1px;color:var(--bone-dim);text-transform:uppercase;white-space:nowrap}
   nav .links a:hover{color:var(--life);text-decoration:none}
   main{opacity:0;transition:opacity 1s ease} main.alive{opacity:1}
 
   section{max-width:1060px;margin:0 auto;padding:88px 24px 26px}
   .folio{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--rule-strong);padding-bottom:10px;margin-bottom:30px;flex-wrap:wrap}
-  .folio .no{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:1px}
+  .folio .no{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:1px}
   .folio h2{font-family:var(--serif);font-weight:600;font-size:clamp(23px,3.4vw,34px)}
-  .folio .note{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--bone-faint);letter-spacing:.6px}
+  .folio .note{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--bone-faint);letter-spacing:.6px}
 
   /* HERO */
   #hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:none;padding:104px 0 0}
   #organism{position:absolute;inset:0;width:100%;height:100%;display:block}
   .hero-copy{position:relative;z-index:2;max-width:1060px;margin:0 auto;padding:0 24px;pointer-events:none;width:100%}
-  .hero-copy .kicker{font-family:var(--mono);font-size:12px;letter-spacing:2.2px;color:var(--life);text-transform:uppercase;margin-bottom:16px}
+  .hero-copy .kicker{font-family:var(--mono);font-size:13px;letter-spacing:2.2px;color:var(--life);text-transform:uppercase;margin-bottom:16px}
   .hero-copy h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6.2vw,72px);line-height:1.12;max-width:15ch;text-wrap:balance}
   .hero-copy h1 em{font-style:italic;color:var(--life)}
-  .hero-copy p{max-width:52ch;margin-top:20px;color:var(--bone-dim);font-size:16.5px}
-  .hero-copy .hint{margin-top:12px;font-family:var(--mono);font-size:11.5px;color:var(--bone-faint)}
+  .hero-copy p{max-width:52ch;margin-top:20px;color:var(--bone-dim);font-size:18px}
+  .hero-copy .hint{margin-top:12px;font-family:var(--mono);font-size:13px;color:var(--bone-faint)}
   .vitals{position:relative;z-index:2;margin:56px auto 0;max-width:1060px;width:calc(100% - 48px);display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));border:1px solid var(--rule-strong);background:rgba(10,15,13,.75);backdrop-filter:blur(6px)}
   .vital{padding:16px 18px;border-right:1px solid var(--rule)}
-  .vital .k{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;color:var(--bone-faint);text-transform:uppercase}
+  .vital .k{font-family:var(--mono);font-size:13px;letter-spacing:1.5px;color:var(--bone-faint);text-transform:uppercase}
   .vital .v{font-family:var(--mono);font-size:25px;margin-top:6px;font-variant-numeric:tabular-nums}
   .vital .v.life{color:var(--life)} .vital .v.gold{color:var(--gold)} .vital .v.blood{color:var(--blood)}
-  .vital .s{font-size:11px;color:var(--bone-faint);font-family:var(--mono);margin-top:2px}
-  #organ-tip{position:absolute;z-index:3;pointer-events:none;background:var(--void-3);border:1px solid var(--rule-strong);padding:10px 14px;font-family:var(--mono);font-size:12px;display:none;max-width:260px;border-radius:2px}
-  #organ-tip .t{color:var(--life)} #organ-tip .d{color:var(--bone-dim);margin-top:3px;font-size:11px}
+  .vital .s{font-size:13px;color:var(--bone-faint);font-family:var(--mono);margin-top:2px}
+  #organ-tip{position:absolute;z-index:3;pointer-events:none;background:var(--void-3);border:1px solid var(--rule-strong);padding:10px 14px;font-family:var(--mono);font-size:13px;display:none;max-width:260px;border-radius:2px}
+  #organ-tip .t{color:var(--life)} #organ-tip .d{color:var(--bone-dim);margin-top:3px;font-size:13px}
 
   /* LEDGER */
   .ledger{border:1px solid var(--rule-strong);background:var(--void-2);overflow-x:auto}
   .ledger table{width:100%;border-collapse:collapse;min-width:680px}
-  .ledger th{font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bone-faint);text-align:left;padding:11px 15px;border-bottom:1px solid var(--rule-strong)}
-  .ledger td{padding:12px 15px;border-bottom:1px solid var(--rule);font-size:14.5px;vertical-align:top}
+  .ledger th{font-family:var(--mono);font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bone-faint);text-align:left;padding:11px 15px;border-bottom:1px solid var(--rule-strong)}
+  .ledger td{padding:12px 15px;border-bottom:1px solid var(--rule);font-size:15px;vertical-align:top}
   .ledger tr:last-child td{border-bottom:none}
   .ledger .num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
   .ledger .mono{font-family:var(--mono);font-size:13px;white-space:nowrap}
-  .stamp{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:1.2px;padding:3px 9px;border:1px solid currentColor;border-radius:2px;text-transform:uppercase;white-space:nowrap}
+  .stamp{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:1.2px;padding:3px 9px;border:1px solid currentColor;border-radius:2px;text-transform:uppercase;white-space:nowrap}
   .stamp.ship{color:var(--life)} .stamp.dead{color:var(--blood)} .stamp.hold{color:var(--gold)}
-  .caveat{font-family:var(--mono);font-size:11.5px;color:var(--bone-faint);margin-top:12px;line-height:1.7}
+  .caveat{font-family:var(--mono);font-size:13px;color:var(--bone-faint);margin-top:12px;line-height:1.7}
   .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
-  .filters button{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);padding:6px 14px;cursor:pointer;border-radius:2px}
+  .filters button{font-family:var(--mono);font-size:13px;letter-spacing:1px;text-transform:uppercase;background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);padding:6px 14px;cursor:pointer;border-radius:2px}
   .filters button.on{border-color:var(--life);color:var(--life)}
-  .count-line{font-family:var(--mono);font-size:12px;color:var(--bone-dim);margin-bottom:14px}
+  .count-line{font-family:var(--mono);font-size:13.5px;color:var(--bone-dim);margin-bottom:14px}
   .count-line b{color:var(--life);font-weight:500}
 
   /* MINDS */
@@ -87,18 +87,18 @@
   .mind .pulse.idle{background:var(--bone-faint);box-shadow:none;animation:none}
   @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
   .mind h3{font-family:var(--serif);font-size:16.5px;font-weight:600;margin-bottom:5px}
-  .mind .role{font-family:var(--mono);font-size:10.5px;color:var(--life);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px}
-  .mind p{font-size:13.5px;color:var(--bone-dim);line-height:1.55}
+  .mind .role{font-family:var(--mono);font-size:13px;color:var(--life);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px}
+  .mind p{font-size:15px;color:var(--bone-dim);line-height:1.55}
 
   /* GENOME */
   #genome-net{width:100%;height:340px;border:1px solid var(--rule-strong);background:var(--void-2);display:block;cursor:pointer}
-  .gene-legend{font-family:var(--mono);font-size:11px;color:var(--bone-faint);margin-top:10px}
+  .gene-legend{font-family:var(--mono);font-size:13px;color:var(--bone-faint);margin-top:10px}
   .gene-legend .g{color:var(--life)} .gene-legend .p{color:var(--bone-dim)} .gene-legend .b{color:var(--gold)}
 
   /* LAW */
   .law-quote{border-left:2px solid var(--life);padding:6px 0 6px 22px;margin-bottom:28px;max-width:62ch}
   .law-quote p{font-family:var(--serif);font-style:italic;font-size:18.5px;line-height:1.6}
-  .law-quote .src{font-family:var(--mono);font-size:11px;color:var(--bone-faint);margin-top:8px;letter-spacing:1px}
+  .law-quote .src{font-family:var(--mono);font-size:13px;color:var(--bone-faint);margin-top:8px;letter-spacing:1px}
 
   /* SUPPORT */
   .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule-strong)}
@@ -106,14 +106,14 @@
   .tier:hover{background:var(--void-3)}
   .tier .amt{font-family:var(--mono);font-size:28px;color:var(--gold);font-variant-numeric:tabular-nums}
   .tier h3{font-family:var(--serif);font-size:16px;font-weight:600;margin:8px 0 6px}
-  .tier p{font-size:13px;color:var(--bone-dim);line-height:1.55}
-  .tier .go{display:inline-block;margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;border:1px solid var(--life);color:var(--life);padding:7px 16px;border-radius:2px}
+  .tier p{font-size:15px;color:var(--bone-dim);line-height:1.55}
+  .tier .go{display:inline-block;margin-top:14px;font-family:var(--mono);font-size:13px;letter-spacing:1.2px;text-transform:uppercase;border:1px solid var(--life);color:var(--life);padding:7px 16px;border-radius:2px}
   .tier .go:hover{background:var(--life);color:var(--void);text-decoration:none}
 
   #join{text-align:center;padding-bottom:100px}
   #join h2{font-family:var(--serif);font-weight:400;font-size:clamp(26px,4.5vw,44px);max-width:22ch;margin:0 auto;text-wrap:balance}
   #join p{max-width:52ch;margin:18px auto 0;color:var(--bone-dim)}
-  footer{border-top:1px solid var(--rule);padding:32px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;max-width:1060px;margin:0 auto;font-family:var(--mono);font-size:12px;color:var(--bone-faint)}
+  footer{border-top:1px solid var(--rule);padding:32px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;max-width:1060px;margin:0 auto;font-family:var(--mono);font-size:13px;color:var(--bone-faint)}
   footer .right{margin-left:auto}
 
   /* RESPONSIVE */
@@ -131,33 +131,43 @@
 
   /* #255 W2: scale rails */
   .rail{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-  .rail input[type=search]{background:var(--void-2);border:1px solid var(--rule-strong);color:var(--bone);font-family:var(--mono);font-size:13px;padding:8px 12px;border-radius:2px;min-width:220px}
+  .rail input[type=search]{background:var(--void-2);border:1px solid var(--rule-strong);color:var(--bone);font-family:var(--mono);font-size:13.5px;padding:8px 12px;border-radius:2px;min-width:220px}
   .rail input[type=search]:focus{outline:2px solid var(--life);outline-offset:2px}
-  .pager{display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--bone-dim);margin-top:14px}
-  .pager button{font-family:var(--mono);font-size:11px;background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);padding:5px 12px;cursor:pointer;border-radius:2px}
+  .pager{display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:13px;color:var(--bone-dim);margin-top:14px}
+  .pager button{font-family:var(--mono);font-size:13px;background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);padding:5px 12px;cursor:pointer;border-radius:2px}
   .pager button:disabled{opacity:.35;cursor:default}
   .pager button:not(:disabled):hover{border-color:var(--life);color:var(--life)}
 
   /* #255 W4: proof stamp */
-  .proof-stamp{margin-top:16px;border:1px solid var(--rule-strong);background:var(--void-2);padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.8}
-  .proof-stamp .t{color:var(--gold);letter-spacing:1.2px;text-transform:uppercase;font-size:10.5px}
+  .proof-stamp{margin-top:16px;border:1px solid var(--rule-strong);background:var(--void-2);padding:14px 16px;font-family:var(--mono);font-size:13px;line-height:1.8}
+  .proof-stamp .t{color:var(--gold);letter-spacing:1.2px;text-transform:uppercase;font-size:13px}
   .proof-stamp .root{color:var(--bone-dim);word-break:break-all}
   .proof-stamp a{color:var(--life)}
 
   /* #255 W3: birth certificate page */
   .cert{max-width:720px;margin:0 auto;padding:120px 24px 80px}
   .cert .frame{border:1px solid var(--rule-strong);background:var(--void-2);padding:38px 34px}
-  .cert .kicker{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+  .cert .kicker{font-family:var(--mono);font-size:13px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
   .cert h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,5vw,44px);margin:10px 0 6px}
   .cert .tag{color:var(--bone-dim);font-size:15px;margin-bottom:24px}
   .cert dl{display:grid;grid-template-columns:max-content 1fr;gap:10px 22px;font-size:14.5px}
-  .cert dt{font-family:var(--mono);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--bone-faint);padding-top:2px}
+  .cert dt{font-family:var(--mono);font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--bone-faint);padding-top:2px}
   .cert dd{font-family:var(--mono);font-variant-numeric:tabular-nums}
-  .cert .visit{display:inline-block;margin-top:26px;font-family:var(--mono);font-size:12px;letter-spacing:1.2px;text-transform:uppercase;border:1px solid var(--life);color:var(--life);padding:9px 18px;border-radius:2px}
+  .cert .visit{display:inline-block;margin-top:26px;font-family:var(--mono);font-size:13px;letter-spacing:1.2px;text-transform:uppercase;border:1px solid var(--life);color:var(--life);padding:9px 18px;border-radius:2px}
   .cert .visit:hover{background:var(--life);color:var(--void);text-decoration:none}
-  .cert .back{font-family:var(--mono);font-size:12px;color:var(--bone-dim);display:inline-block;margin-bottom:22px}
+  .cert .back{font-family:var(--mono);font-size:13px;color:var(--bone-dim);display:inline-block;margin-bottom:22px}
 
   /* #255 W7: view-all doors from the home previews to the full registries */
-  .viewall{display:inline-block;margin-top:16px;font-family:var(--mono);font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;border:1px solid var(--life);color:var(--life);padding:8px 18px;border-radius:2px}
+  .viewall{display:inline-block;margin-top:16px;font-family:var(--mono);font-size:13px;letter-spacing:1.2px;text-transform:uppercase;border:1px solid var(--life);color:var(--life);padding:8px 18px;border-radius:2px}
   .viewall:hover{background:var(--life);color:var(--void);text-decoration:none}
   .registry-head{padding-top:110px}
+
+  /* #296 T2/T3/T5: full-page blocks */
+  .books-h{font-family:var(--serif);font-weight:600;font-size:21px;margin:42px 0 14px}
+  .dimcell{color:var(--bone-faint)}
+  .lifecell{color:var(--life);font-family:var(--mono);font-size:13px}
+  .reasoncell{font-size:15px;line-height:1.6;min-width:280px}
+  .lawlist{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule-strong)}
+  .lawitem{background:var(--void-2);padding:16px 20px}
+  .lawitem p{font-size:16px;color:var(--bone-dim);line-height:1.6;max-width:80ch}
+  .lawhead{font-family:var(--mono);font-size:13.5px;letter-spacing:.8px;color:var(--life);margin-bottom:6px}
