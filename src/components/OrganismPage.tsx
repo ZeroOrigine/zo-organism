@@ -287,6 +287,10 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const DPR = Math.min(2, window.devicePixelRatio || 1);
     let GW = 0; let GH = 0; let raf = 0; let stopped = false; let gsel = -1; let psel = -1;
+    // #298 T3: the simulation carries HEAT that cools to zero in ~4s, and
+    // every force is scaled by it — the network settles to stillness instead
+    // of boiling forever. Interaction re-warms it briefly.
+    let heat = 1;
     interface GN { t: 'gene' | 'prod'; n: string; hold?: boolean; x: number; y: number; vx: number; vy: number }
     let gnodes: GN[] = []; let glinks: Array<{ a: number; b: number; held?: boolean }> = [];
     const genes = state.genes; const prods = state.products.slice(0, 10);
@@ -314,17 +318,23 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
           // each gene carries a text label that must stay readable at rest
           const geneair = a.t === 'gene' && b.t === 'gene';
           const reach = geneair ? 16000 : 5200;
-          const power = geneair ? 110 : 28;
+          const power = (geneair ? 110 : 28) * heat;
           if (d2 < reach) { const f = power / d2; a.vx -= dx * f; a.vy -= dy * f; b.vx += dx * f; b.vy += dy * f; }
         }
       }
       glinks.forEach((l) => {
         const a = gnodes[l.a]; const b = gnodes[l.b];
-        const dx = b.x - a.x; const dy = b.y - a.y; const d = Math.sqrt(dx * dx + dy * dy) || 1; const f = (d - 110) * 0.0006;
+        const dx = b.x - a.x; const dy = b.y - a.y; const d = Math.sqrt(dx * dx + dy * dy) || 1; const f = (d - 110) * 0.0006 * heat;
         a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
       });
+      heat = Math.max(0, heat - 1 / 240);
       gnodes.forEach((n) => {
-        n.vx *= 0.9; n.vy *= 0.9; n.x += n.vx; n.y += n.vy;
+        // #298 T3: heavy damping + a hard speed cap — ambient motion reads as
+        // breathing, never boiling
+        n.vx *= 0.6; n.vy *= 0.6;
+        const sp = Math.hypot(n.vx, n.vy);
+        if (sp > 1.2) { n.vx *= 1.2 / sp; n.vy *= 1.2 / sp; }
+        n.x += n.vx; n.y += n.vy;
         n.x = Math.max(30, Math.min(GW - 30, n.x)); n.y = Math.max(24, Math.min(GH - 24, n.y));
       });
       // W9: HARD separation between gene nodes. Two genes linked to the same
@@ -394,6 +404,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       });
       gsel = hit === gsel ? -1 : hit;
       psel = phit === psel ? -1 : phit;
+      heat = Math.max(heat, 0.35); // a touch stirs it, briefly
       if (rm) gdraw();
     };
     const onGMove = (ev: MouseEvent) => {

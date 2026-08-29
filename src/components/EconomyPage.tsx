@@ -98,7 +98,7 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay }: {
         ['Fixed supply.', ' 1,000,000,000 ZO. No inflation, ever. Emission only unlocks against proven work (Folio E·3).'],
       ],
       gateHead: 'GATE · CANNOT BE BYPASSED, EVEN BY THE FOUNDER',
-      gate: `Revenue at or above $${t.phase2_monthly_revenue_usd.toLocaleString()}/month for ${t.phase2_months_required} consecutive months · ${t.phase2_active_users}+ active users · a written opinion from a Canadian securities lawyer. All three. The pre-approval of this roadmap explicitly does not open this gate.` },
+      gate: 'A written opinion from a Canadian securities lawyer. That is the only door (amended by the founder 2026-08-29; the revenue and user thresholds moved to the Gate Watch as public vitals). The pre-approval of this roadmap explicitly does not open this gate, and counsel will weigh the same utility evidence the vitals show.' },
     { id: 'p3', state: 'far', tag: 'PHASE 3', name: 'The Open Market, Maybe', status: 'BEHIND PHASE 2 · MAY NEVER OPEN', cls: 'far',
       short: 'Tradeability, only if Phase 2 utility is real, only with counsel, only if it serves holders rather than speculation. The token is valuable without it, the way airline miles are.',
       mech: [
@@ -172,7 +172,7 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay }: {
 
       <section className="eco-section eco-band">
         <div className="eco-wrap">
-          <div className="eco-head"><span className="eco-label gold">FOLIO E·2</span><h2>The Gate Watch</h2><span className="eco-label right">HONEST ZEROS, SHOWN LARGE</span></div>
+          <div className="eco-head"><span className="eco-label gold">FOLIO E·2</span><h2>The Gate Watch</h2><span className="eco-label right">ONE GATE, TWO VITALS · HONEST ZEROS, SHOWN LARGE</span></div>
           <p className="eco-lede">The crypto world has watched a thousand tokens launch. It has never watched a token earn
             the right to launch, in public, against written acceptance tests. These meters read from the anchored ledger.
             They cannot be inflated, because inflating them would break a hash chain the institution does not control.</p>
@@ -186,16 +186,16 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay }: {
                   <small>counted from settled payment rows in the ledger, not signups</small>
                 </div>
                 <div className="meter">
-                  <div className="row"><h4>Phase 2 gate: monthly revenue, {t.phase2_months_required} months running</h4>
-                    <span className="num">${gates.revenue_30d.toFixed(2)} last 30 days / ${t.phase2_monthly_revenue_usd.toLocaleString()} × {t.phase2_months_required}</span></div>
+                  <div className="row"><h4>Vital: monthly revenue</h4>
+                    <span className="num">${gates.revenue_30d.toFixed(2)} last 30 days · reference ${t.phase2_monthly_revenue_usd.toLocaleString()}/mo</span></div>
                   <div className="bar"><i style={{ width: grown ? pct(gates.revenue_30d, t.phase2_monthly_revenue_usd) + '%' : 0 }} /></div>
-                  <small>the number is small and printed anyway. that is the whole brand</small>
+                  <small>a signal of life, watched in public, no longer a door · the number is small and printed anyway</small>
                 </div>
                 <div className="meter">
-                  <div className="row"><h4>Phase 2 gate: active users</h4>
-                    <span className="num">{gates.signups_real} recorded signups / {t.phase2_active_users} users</span></div>
+                  <div className="row"><h4>Vital: active users</h4>
+                    <span className="num">{gates.signups_real} recorded signups · reference {t.phase2_active_users}</span></div>
                   <div className="bar"><i style={{ width: grown ? pct(gates.signups_real, t.phase2_active_users) + '%' : 0 }} /></div>
-                  <small>real signal means non-probe rows in the product metrics ledger · {gates.real_signal_products} products carry real signal today</small>
+                  <small>a signal of life, watched in public, no longer a door · {gates.real_signal_products} products carry real signal today</small>
                 </div>
               </>
             ) : (

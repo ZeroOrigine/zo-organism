@@ -79,16 +79,27 @@ export default async function BooksPage() {
         <div className="ledger"><table>
           <thead><tr><th>Day</th><th className="num">Entries</th><th>Chained root</th><th>On-chain anchor</th></tr></thead>
           <tbody>
-            {data.proofs.map((p) => (
-              <tr key={p.day}>
-                <td className="mono">{p.day}</td>
-                <td className="num">{p.leaf_count}</td>
-                <td className="mono">{p.chained_root.slice(0, 12)}&hellip;{p.chained_root.slice(-6)}</td>
-                <td>{p.solana_explorer
-                  ? <a href={p.solana_explorer} rel="noopener noreferrer" target="_blank">verify on Solana</a>
-                  : <span className="dimcell">awaiting anchor</span>}</td>
-              </tr>
-            ))}
+            {data.proofs.map((p) => {
+              // #298 T2(c): a day older than an anchored later day is already
+              // cryptographically sealed through the prev_root chain — say so,
+              // and link the covering anchor. "awaiting anchor" only when no
+              // later anchored day exists.
+              const covering = p.solana_explorer ? null
+                : data.proofs.filter((q) => q.day > p.day && q.solana_explorer)
+                    .sort((a, b) => (a.day < b.day ? -1 : 1))[0] || null;
+              return (
+                <tr key={p.day}>
+                  <td className="mono">{p.day}</td>
+                  <td className="num">{p.leaf_count}</td>
+                  <td className="mono">{p.chained_root.slice(0, 12)}&hellip;{p.chained_root.slice(-6)}</td>
+                  <td>{p.solana_explorer
+                    ? <a href={p.solana_explorer} rel="noopener noreferrer" target="_blank">verify on Solana</a>
+                    : covering
+                      ? <a href={covering.solana_explorer as string} rel="noopener noreferrer" target="_blank">sealed by chain · via the {covering.day} anchor</a>
+                      : <span className="dimcell">awaiting anchor</span>}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table></div>
         <p className="caveat">Each day&apos;s entries hash into one root; each root chains to the previous day&apos;s and is
