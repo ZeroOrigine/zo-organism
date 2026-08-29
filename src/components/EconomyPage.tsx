@@ -40,9 +40,15 @@ const ALLOC: Record<string, { t: string; p: string; d: string; r: string }> = {
     r: 'TRANSPARENCY LAW · every movement is a ledger row, every row hashes into the day’s root, every root lands on-chain. The reserve cannot move quietly.' },
 };
 
-export default function EconomyPage({ gates, targets, anchorSig, anchorDay, creditsLive }: {
+export interface EconomyMint {
+  address: string; vault: string; conception_sig: string;
+  explorer_mint: string; explorer_memo: string | null;
+}
+
+export default function EconomyPage({ gates, targets, anchorSig, anchorDay, creditsLive, mint }: {
   gates: EconomyGates | null; targets: EconomyTargets | null;
   anchorSig: string | null; anchorDay: string | null; creditsLive?: boolean;
+  mint?: EconomyMint | null;
 }) {
   const [allocKey, setAllocKey] = useState('eco');
   const [openPhases, setOpenPhases] = useState<Record<string, boolean>>({});
@@ -121,6 +127,7 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay, cred
           <Link href="/graveyard">Graveyard</Link><Link href="/genes">Genome</Link>
           <Link href="/books">Books</Link><Link href="/law">Law</Link>
           <a href="/economy" style={{ color: 'var(--life)' }}>Economy</a>
+          <Link href="/whitepaper">Paper</Link>
         </span>
       </nav>
 
@@ -266,6 +273,42 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay, cred
             who contributed, who bought credits, since day zero. Every day that passes adds another sealed root to the only
             whitelist that will ever exist. Joining early is valuable not because of a promise made today, but because the
             record of today cannot be forged tomorrow.</p>
+        </div>
+      </section>
+
+      <section className="eco-section">
+        <div className="eco-wrap">
+          <div className="eco-head"><span className="eco-label gold">FOLIO E·5</span><h2>The conceived mint</h2><span className="eco-label right">COUNTERFEIT WARNING · STANDING</span></div>
+          {mint ? (
+            <>
+              <p className="eco-lede">The canonical on-chain identity of ZO has been <b>conceived</b>: an SPL mint on Solana
+                mainnet with <b>zero supply</b>. No ZO tokens exist. The mint and freeze authority both sit with the
+                2-of-2 treasury vault (founder + machine); the machine&apos;s own key cannot mint alone, and neither can the
+                founder&apos;s. Birth (supply, distribution) stays behind the Phase 2 legal-opinion gate.</p>
+              <div className="gatebox" style={{ marginTop: 22 }}>
+                <p className="eco-label gold">THE ONE TRUE MINT ADDRESS</p>
+                <p style={{ wordBreak: 'break-all', fontFamily: 'var(--mono, monospace)' }}>{mint.address}</p>
+                <p style={{ marginTop: 10 }}>Supply: 0 · decimals 9 · mint + freeze authority: treasury vault{' '}
+                  <span style={{ wordBreak: 'break-all', fontFamily: 'var(--mono, monospace)' }}>{mint.vault}</span></p>
+                <p style={{ marginTop: 10 }}>
+                  <a href={mint.explorer_mint} rel="noopener noreferrer" target="_blank">verify the mint on Solana</a>
+                  {mint.explorer_memo && (<>{' · '}<a href={mint.explorer_memo} rel="noopener noreferrer" target="_blank">the conception memo</a></>)}
+                </p>
+              </div>
+              <p className="eco-lede" style={{ marginTop: 22 }}><b>Any ZO in circulation today is counterfeit.</b> The birth
+                of real supply will be announced here and confirmed by a signed memo transaction from the machine&apos;s anchor
+                address 77E28MtzWiE5jKwF7yALzysiBqpwQwKMmEwpgDzcHjgk. Any token claiming to be ZO without that signed
+                confirmation, or under any other mint address, is a fake.</p>
+            </>
+          ) : (
+            <p className="eco-lede">No ZO token exists today, and no mint has been conceived yet. When ZO&apos;s on-chain
+              identity is reserved, its one true mint address will be published here and confirmed by a signed memo from
+              the machine&apos;s anchor address 77E28MtzWiE5jKwF7yALzysiBqpwQwKMmEwpgDzcHjgk. Until then, every token
+              claiming to be ZO is counterfeit.</p>
+          )}
+          <p className="eco-lede" style={{ marginTop: 26 }}>The full story, from the proof layer to the growth law, lives in
+            the whitepaper: <Link href="/whitepaper" style={{ color: 'var(--life)' }}>read the whitepaper</Link>, rendered
+            live from the machine&apos;s constitution store, with a downloadable PDF.</p>
         </div>
       </section>
 

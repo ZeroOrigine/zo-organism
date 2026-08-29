@@ -104,6 +104,22 @@ export interface EconomyData {
   gates: { paying_customers: number; revenue_30d: number; revenue_alltime: number; signups_real: number; real_signal_products: number } | null;
   targets: { phase1_paying_customers: number; phase2_monthly_revenue_usd: number; phase2_months_required: number; phase2_active_users: number } | null;
   credits?: { live: boolean; purchased_cents: number } | null;
+  // #301 M3: the conceived mint. Null until the conception act runs on-chain.
+  mint?: { address: string; vault: string; conception_sig: string; explorer_mint: string; explorer_memo: string | null } | null;
+}
+
+export interface WhitepaperDoc { version: string; note: string; markdown: string; sha256: string }
+
+export async function getWhitepaper(): Promise<WhitepaperDoc | null> {
+  // #298 T4: the whitepaper serves from the machine's constitution store —
+  // the page and the downloadable PDF regenerate from the same bytes.
+  try {
+    const r = await fetch(`${RAILWAY}/site/whitepaper`, { next: { revalidate: 300 } });
+    if (!r.ok) return null;
+    return (await r.json()) as WhitepaperDoc;
+  } catch {
+    return null;
+  }
 }
 
 export async function getEconomyData(): Promise<EconomyData | null> {

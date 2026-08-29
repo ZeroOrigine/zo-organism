@@ -19,6 +19,7 @@ export default async function Economy() {
       gates={econ?.gates ?? null}
       targets={econ?.targets ?? null}
       creditsLive={econ?.credits?.live ?? false}
+      mint={econ?.mint ?? null}
       anchorSig={proof?.latest_anchored?.solana_sig ?? null}
       anchorDay={proof?.latest_anchored?.day ?? null}
     />
