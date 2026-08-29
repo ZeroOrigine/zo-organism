@@ -308,7 +308,9 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay, cred
           )}
           <p className="eco-lede" style={{ marginTop: 26 }}>The full story, from the proof layer to the growth law, lives in
             the whitepaper: <Link href="/whitepaper" style={{ color: 'var(--life)' }}>read the whitepaper</Link>, rendered
-            live from the machine&apos;s constitution store, with a downloadable PDF.</p>
+            live from the machine&apos;s constitution store, with a downloadable PDF. The sovereignty curve has its own
+            exam room: <Link href="/sovereignty" style={{ color: 'var(--life)' }}>the sovereignty scoreboard</Link>,
+            where the machine attempts full births on its own hardware, pass or fail, in public.</p>
         </div>
       </section>
 

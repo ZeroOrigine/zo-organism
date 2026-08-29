@@ -59,7 +59,10 @@ export default function RegistryAll({ products }: { products: SiteProduct[] }) {
                 <td className="mono">{p.cat}</td>
                 <td className="num">{p.cost === 'pre-attribution'
                   ? <span style={{ color: 'var(--bone-faint)' }}>pre-attribution</span> : p.cost}</td>
-                <td><span className={'stamp ' + p.stamp[0]}>{p.stamp[1]}</span></td>
+                <td><span className={'stamp ' + p.stamp[0]}>{p.stamp[1]}</span>
+                  {p.slug.startsWith('exam-') && (
+                    <span className="stamp hold" title="built entirely by open models on the machine's own hardware"> BORN IN EXAMINATION</span>
+                  )}</td>
               </tr>
             ))}
             {rows.length === 0 && (

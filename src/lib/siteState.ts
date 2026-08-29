@@ -122,6 +122,24 @@ export interface EconomyData {
 
 export interface WhitepaperDoc { version: string; note: string; markdown: string; sha256: string }
 
+// #305 E3: the sovereignty exam scoreboard.
+export interface ExamRun {
+  started: string; ended: string | null; status: string;
+  stages: { seen?: Record<string, string>; local_calls?: number; cloud_paid_calls_in_window?: number; zero_anthropic?: boolean };
+  models: Record<string, string>;
+}
+export interface ExamData { exam_mode: boolean; runs: ExamRun[] }
+
+export async function getExamData(): Promise<ExamData | null> {
+  try {
+    const r = await fetch(`${RAILWAY}/site/exam`, { next: { revalidate: 60 } });
+    if (!r.ok) return null;
+    return (await r.json()) as ExamData;
+  } catch {
+    return null;
+  }
+}
+
 export async function getWhitepaper(): Promise<WhitepaperDoc | null> {
   // #298 T4: the whitepaper serves from the machine's constitution store —
   // the page and the downloadable PDF regenerate from the same bytes.
