@@ -128,7 +128,12 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
           [60, 400, 1200].forEach((ms) => setTimeout(() => {
             try {
               const el = document.querySelector(window.location.hash);
-              if (el && Math.abs(el.getBoundingClientRect().top) > 120) el.scrollIntoView();
+              if (el && Math.abs(el.getBoundingClientRect().top) > 120) {
+                // INSTANT by the finding's letter: the page's smooth
+                // scroll-behavior is an animation, and an animation can be
+                // frozen by a hidden tab; a deep link must simply BE there
+                window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'instant' as ScrollBehavior });
+              }
             } catch { /* an unscrollable hash is harmless */ }
           }, ms));
         }
