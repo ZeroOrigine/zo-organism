@@ -61,6 +61,7 @@ export default function GenesAll({ genes }: { genes: Gene[] }) {
         )}
         <p className="caveat">A blocked gene is held back until its findings clear; the findings themselves are internal
           working papers and never render here.</p>
+        <Link className="viewall" href="/genome" style={{ marginRight: 12 }}>open the playground: every gene, playable</Link>
         <Link className="viewall" href="/">back to the organism</Link>
       </section>
     </main>

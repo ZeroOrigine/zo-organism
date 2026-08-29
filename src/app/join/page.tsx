@@ -108,11 +108,14 @@ export default async function JoinPage() {
           <div className="eyebrow">Benefit 04</div>
           <h2>Claim your genome access</h2>
           <p className="lede">
-            Already supported? Enter the email from your donation and your GitHub username.
-            The machine matches your claim against the donation ledger and invites you as a
-            read-only collaborator on the private gene library. You can also browse the{' '}
-            <Link href="/genome" style={{ color: 'var(--alive)', textDecoration: 'underline' }}>public family tree</Link>{' '}
-            first: every gene&apos;s name and origin is open, the code itself is for supporters.
+            Supporters read everything: the proven genes, the failures, the fixes. Any amount. Same
+            access. Enter the email from your contribution; the machine matches it against the
+            donation ledger and grants read access to the full library. A GitHub username is optional
+            (it adds repository access for developers; it is not the only door). Browse the{' '}
+            <Link href="/genome" style={{ color: 'var(--alive)', textDecoration: 'underline' }}>playground</Link>{' '}
+            first: every gene&apos;s name, status and origin is open to everyone, one{' '}
+            <Link href="/genome/sample" style={{ color: 'var(--alive)', textDecoration: 'underline' }}>sample gene</Link>{' '}
+            is fully open, and the depth is supporter access.
           </p>
           <GeneClaimForm />
         </div></section>
