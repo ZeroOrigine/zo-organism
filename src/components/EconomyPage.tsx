@@ -120,16 +120,6 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay, cred
 
   return (
     <main style={{ opacity: 1 }}>
-      <nav aria-label="Primary">
-        <span className="wordmark">Zero<b>Origine</b></span>
-        <span className="links">
-          <Link href="/">Organism</Link><Link href="/products">Births</Link>
-          <Link href="/graveyard">Graveyard</Link><Link href="/genes">Genome</Link>
-          <Link href="/books">Books</Link><Link href="/law">Law</Link>
-          <a href="/economy" style={{ color: 'var(--life)' }}>Economy</a>
-          <Link href="/whitepaper">Paper</Link>
-        </span>
-      </nav>
 
       <header className="eco-hero">
         <div className="egg" aria-hidden="true"><span>0</span></div>

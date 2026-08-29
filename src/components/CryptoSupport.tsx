@@ -31,13 +31,6 @@ export default function CryptoSupport() {
 
   return (
     <main style={{ opacity: 1 }}>
-      <nav aria-label="Primary">
-        <span className="wordmark">Zero<b>Origine</b></span>
-        <span className="links">
-          <Link href="/">Organism</Link><Link href="/books">Books</Link>
-          <Link href="/economy">Economy</Link><Link href="/credits">Credits</Link>
-        </span>
-      </nav>
       <section className="eco-section registry-head">
         <div className="eco-wrap">
           <div className="eco-head"><span className="eco-label gold">SUPPORT · CRYPTO</span><h2>Send SOL or USDC, enter the books</h2></div>

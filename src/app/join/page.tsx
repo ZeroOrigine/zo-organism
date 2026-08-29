@@ -30,16 +30,8 @@ export default async function JoinPage() {
       <JoinRevealObserver />
       <a href="#support" className="skip-link">Skip to main content</a>
 
-      <nav><div className="wrap nav">
-        <Link href="/" className="logo">Zero<span>Origine</span></Link>
-        <ul>
-          <li><Link href="/#registry">Products</Link></li>
-          <li><Link href="/#law">Constitution</Link></li>
-          <li><Link href="/#treasury">Treasury</Link></li>
-        </ul>
-        <Link href="/" className="btn ghost">Back to ZeroOrigine</Link>
-      </div></nav>
-
+      {/* #4505: the legacy v4 nav (dead /#registry /#law /#treasury anchors)
+          is gone — SiteNav in the root layout is the one header. */}
       <main>
         {/* Hero */}
         <section style={{ borderTop: 'none' }}><div className="wrap" style={{ textAlign: 'center' }}>

@@ -63,14 +63,6 @@ export default function LiveRoom() {
 
   return (
     <main style={{ opacity: 1 }}>
-      <nav aria-label="Primary">
-        <span className="wordmark">Zero<b>Origine</b></span>
-        <span className="links">
-          <Link href="/">Organism</Link><Link href="/products">Births</Link>
-          <Link href="/books">Books</Link><Link href="/economy">Economy</Link>
-          <a href="/live" style={{ color: 'var(--life)' }}>Live</a>
-        </span>
-      </nav>
       <section className="eco-section registry-head">
         <div className="eco-wrap">
           <div className="eco-head">

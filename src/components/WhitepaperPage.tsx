@@ -88,13 +88,6 @@ function renderMarkdown(md: string): ReactNode[] {
 export default function WhitepaperPage({ doc }: { doc: WhitepaperDoc | null }) {
   return (
     <main style={{ opacity: 1 }}>
-      <nav aria-label="Primary">
-        <span className="wordmark">Zero<b>Origine</b></span>
-        <span className="links">
-          <Link href="/">Organism</Link><Link href="/books">Books</Link>
-          <Link href="/economy">Economy</Link><Link href="/credits">Credits</Link>
-        </span>
-      </nav>
       <section className="registry-head">
         <div className="folio">
           <span className="no">PAPER</span>

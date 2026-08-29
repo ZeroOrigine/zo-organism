@@ -34,13 +34,6 @@ export default async function SampleGene() {
   const s = await getSample();
   return (
     <main style={{ opacity: 1 }}>
-      <nav aria-label="Primary">
-        <span className="wordmark">Zero<b>Origine</b></span>
-        <span className="links">
-          <Link href="/">Organism</Link><Link href="/genome">Playground</Link>
-          <Link href="/genes">Registry</Link><Link href="/economy">Economy</Link>
-        </span>
-      </nav>
       <section className="eco-section registry-head">
         <div className="eco-wrap">
           <div className="eco-head"><span className="eco-label gold">FREE SAMPLE · ONE GENE, FULLY OPEN</span>

@@ -1,0 +1,17 @@
+# #4505: the site's own guard. The nav law runs before every deploy-bearing
+# push: one primary nav, every canonical route present, zero page-local
+# copies — plus the build itself.
+name: site-guard
+on: [push, pull_request]
+jobs:
+  nav-law-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: THE NAV LAW — one header, mounted once, no page-local forks (#4505)
+        run: node scripts/check-nav.mjs
+      - run: npm run build

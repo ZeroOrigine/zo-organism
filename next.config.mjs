@@ -17,7 +17,15 @@ const nextConfig = {
       // instead: the honest answer to "what is this" is every attempt, alive
       // and dead.
       ...(ZO_PUBLIC_SITE
-        ? [{ source: '/about', destination: '/products', permanent: false }]
+        ? [
+            { source: '/about', destination: '/products', permanent: false },
+            // #4505 (adjacent honesty leak, same class): the template's fake
+            // "$29/month" pricing page and an auth system the parent brand
+            // does not have were reachable on zeroorigine.com. Products keep
+            // these pages; the public site sends them home.
+            { source: '/pricing', destination: '/economy', permanent: false },
+            { source: '/auth/:path*', destination: '/', permanent: false },
+          ]
         : []),
       { source: '/minds', destination: '/#minds', permanent: false },
       { source: '/constitution', destination: '/#constitution', permanent: false },

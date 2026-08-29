@@ -37,14 +37,6 @@ export default function CreditsPage() {
 
   return (
     <main style={{ opacity: 1 }}>
-      <nav aria-label="Primary">
-        <span className="wordmark">Zero<b>Origine</b></span>
-        <span className="links">
-          <Link href="/">Organism</Link><Link href="/books">Books</Link>
-          <Link href="/law">Law</Link><Link href="/economy">Economy</Link>
-          <a href="/credits" style={{ color: 'var(--life)' }}>Credits</a>
-        </span>
-      </nav>
 
       <section className="eco-section registry-head">
         <div className="eco-wrap">

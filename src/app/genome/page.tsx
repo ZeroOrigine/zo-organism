@@ -16,14 +16,6 @@ export const metadata = {
 export default function GenomePage() {
   return (
     <main style={{ opacity: 1 }}>
-      <nav aria-label="Primary">
-        <span className="wordmark">Zero<b>Origine</b></span>
-        <span className="links">
-          <Link href="/">Organism</Link><Link href="/products">Births</Link>
-          <Link href="/genes">Registry</Link><Link href="/books">Books</Link>
-          <Link href="/economy">Economy</Link>
-        </span>
-      </nav>
       <GenomePlayground />
       <footer>
         <span>every failure becomes a gene; every gene is a lesson the dead paid for</span>

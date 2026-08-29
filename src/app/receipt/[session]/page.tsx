@@ -40,11 +40,7 @@ export default async function ReceiptPage({ params }: { params: { session: strin
 
   return (
     <div className="v4" style={{ minHeight: '100vh' }}>
-      <nav><div className="wrap nav">
-        <Link href="/" className="logo">Zero<span>Origine</span></Link>
-        <Link href="/" style={{ color: 'var(--dim)', fontSize: 14 }}>&larr; Back to the control room</Link>
-      </div></nav>
-
+      {/* #4505: SiteNav in the root layout is the one header */}
       <main className="wrap" style={{ padding: '72px 32px 120px', maxWidth: 760 }}>
         {d ? (
           <>

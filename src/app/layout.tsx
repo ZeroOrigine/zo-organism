@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import '@/app/globals.css';
+import '@/app/organism.css';
 import ZoBeacon from '@/components/ZoBeacon';
+import SiteNav from '@/components/SiteNav';
+import ChunkReload from '@/components/ChunkReload';
 
 export const metadata: Metadata = {
   title: 'ZeroOrigine: The Organism',
@@ -67,6 +70,12 @@ export default function RootLayout({
             birth-window gatekeeper was standing on that silence. Mounted here
             it cannot be omitted by a layout that forgets it. */}
         <ZoBeacon />
+        {/* #4505: THE ONE HEADER — mounted once here, for every route. Page
+            files may not render their own primary nav (CI asserts it), so a
+            ship wave can never fork the nav again. ChunkReload heals a tab
+            left open across a deploy (stale chunks -> one reload). */}
+        <SiteNav />
+        <ChunkReload />
         <div id="main-content">{children}</div>
       </body>
     </html>
