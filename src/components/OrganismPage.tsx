@@ -625,6 +625,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
             ))}
           </div>
           {fundErr && <p className="caveat" style={{ color: 'var(--blood)' }}>{fundErr}</p>}
+          <Link className="viewall" href="/support-crypto">Prefer crypto? Send SOL or USDC on Solana</Link>
           <p className="caveat">Payments run through the same Stripe rails, receipts, and supporter emails the site uses today.
             This redesign changes the skin, never the plumbing: donor payments, birth certificates, subscriber emails,
             genome access, and product beacons keep their existing, drilled endpoints.</p>

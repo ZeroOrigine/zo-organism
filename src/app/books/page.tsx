@@ -73,7 +73,9 @@ export default async function BooksPage() {
             )}
           </tbody>
         </table></div>
-        <p className="caveat">Names appear exactly as supporters gave them; no other personal data is published.</p>
+        <p className="caveat">Names appear exactly as supporters gave them; no other personal data is published.
+          Crypto support arrives at the machine&apos;s receive-only Solana wallet
+          BQeNktmf4DAeetsxwCjVZwAzsAwCwkbvL1kSf9nUGXqQ and enters this same ledger.</p>
 
         <h3 className="books-h">The proof chain</h3>
         <div className="ledger"><table>
