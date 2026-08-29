@@ -91,7 +91,11 @@ export default function CreditsPage() {
             and the token is never born, your credits remain what they always were: prepayment for real products,
             spendable in full.</p>
 
+          <Link className="viewall" href="/credits/account" style={{ marginRight: 14 }}>open your account</Link>
           <Link className="viewall" href="/economy">read the whole economy</Link>
+          <p className="caveat" style={{ marginTop: 14 }}>Already hold credits? Your account shows the full statement
+            with an on-chain proof link per entry, the optional wallet binding for ZO conversion, self-serve spending,
+            and the refund policy. Login is a one-time email link; no password exists.</p>
         </div>
       </section>
 
