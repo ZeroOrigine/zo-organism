@@ -115,7 +115,9 @@ export default async function JoinPage() {
             <Link href="/genome" style={{ color: 'var(--alive)', textDecoration: 'underline' }}>playground</Link>{' '}
             first: every gene&apos;s name, status and origin is open to everyone, one{' '}
             <Link href="/genome/sample" style={{ color: 'var(--alive)', textDecoration: 'underline' }}>sample gene</Link>{' '}
-            is fully open, and the depth is supporter access.
+            is fully open, and the depth is supporter access. Already supported? The{' '}
+            <Link href="/library" style={{ color: 'var(--alive)', textDecoration: 'underline' }}>library portal</Link>{' '}
+            emails a one-time entry link; no password, no GitHub required.
           </p>
           <GeneClaimForm />
         </div></section>

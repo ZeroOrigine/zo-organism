@@ -257,6 +257,7 @@ export default function GenomePlayground() {
                   <p className="eco-label gold">🔒 FULL DOC · CODE · HARVEST FINDINGS</p>
                   <p>Supporters read everything: the proven genes, the failures, the fixes.
                     Any amount. Same access. <Link href="/#support" style={{ color: 'var(--life)' }}>become a supporter</Link>
+                    {' '}· <Link href="/library" style={{ color: 'var(--life)' }}>already one? open the library</Link>
                     {' '}· <Link href="/genome/sample" style={{ color: 'var(--life)' }}>read the free sample first</Link></p>
                 </div>
               )}
