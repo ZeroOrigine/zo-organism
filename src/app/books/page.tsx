@@ -20,6 +20,8 @@ export default async function BooksPage() {
     );
   }
   const months = [...data.months].reverse();
+  const rc = data.reconciliation || null;
+  const usd = (c: number) => (c < 0 ? '-$' : '$') + (Math.abs(c) / 100).toFixed(2);
   return (
     <main style={{ opacity: 1 }}>
       <section className="registry-head">
@@ -41,6 +43,52 @@ export default async function BooksPage() {
         </table></div>
         <p className="caveat">Every debit is a logged model or infrastructure call; every credit is a settled payment.
           Nothing here is projected, netted, or annualized.</p>
+
+        {rc && (
+          <>
+            <h3 className="books-h">Revenue reconciliation</h3>
+            <div className="ledger"><table>
+              <tbody>
+                <tr><td>Gross payment events, all time</td><td className="num">{usd(rc.gross_cents)}</td></tr>
+                <tr><td>less founder drills and self-tests</td><td className="num">-{usd(rc.test_drill_cents)}</td></tr>
+                <tr><td>less refunds</td><td className="num">-{usd(rc.refund_cents)}</td></tr>
+                <tr><td>less supporter contributions (they live in the supporter ledger below, not in revenue)</td><td className="num">-{usd(rc.support_reclass_cents)}</td></tr>
+                <tr><td>less credit purchases held as deferred revenue (gift-card model; recognized only when spent)</td><td className="num">-{usd(rc.credits_reclass_cents)}</td></tr>
+                <tr><td><b>Recognized revenue (the number the home page shows)</b></td><td className="num"><b>{usd(rc.recognized_cents)}</b></td></tr>
+              </tbody>
+            </table></div>
+            <p className="caveat">Corrections are made by reversal entries that reference the original, never by deletion;
+              every line above is a row in zo_revenue_events or zo_credits_entries and ties to the cent.</p>
+
+            <h3 className="books-h">Credits outstanding (what the machine owes)</h3>
+            <div className="ledger"><table>
+              <tbody>
+                <tr><td>ZO Credits purchased</td><td className="num">{usd(rc.credits.purchased_cents)}</td></tr>
+                <tr><td>less spent on products (recognized as revenue at spend)</td><td className="num">-{usd(rc.credits.spent_cents)}</td></tr>
+                <tr><td>less refunded</td><td className="num">-{usd(rc.credits.refunded_cents)}</td></tr>
+                <tr><td><b>Outstanding liability</b></td><td className="num"><b>{usd(rc.credits.outstanding_cents)}</b></td></tr>
+              </tbody>
+            </table></div>
+            <p className="caveat">Credits are prepayment the machine still owes in product value. They are not revenue and
+              not a donation; at token birth an unspent balance converts 1:1 into ZO by face value.</p>
+
+            <h3 className="books-h">Recent revenue-ledger entries</h3>
+            <div className="ledger"><table>
+              <thead><tr><th>Date</th><th>Product</th><th className="num">Amount</th><th>Classification</th></tr></thead>
+              <tbody>
+                {rc.entries.map((e, i) => (
+                  <tr key={i}>
+                    <td className="mono">{e.date}</td><td>{e.product}</td>
+                    <td className="num">{usd(e.amount_cents)}</td>
+                    <td className="mono">{e.class}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table></div>
+            <p className="caveat">Itemized, newest first, no personal data. A negative amount is a reversal or refund and
+              names its reason.</p>
+          </>
+        )}
 
         <h3 className="books-h">Cost of every birth</h3>
         <div className="ledger"><table>

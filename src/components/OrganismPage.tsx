@@ -165,13 +165,18 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
     if (!alive) return;
     const t = window.setTimeout(() => {
       document.querySelectorAll<HTMLElement>('[data-count]').forEach((elm) => {
-        const target = parseInt(elm.getAttribute('data-count') || '0', 10);
+        // #4492: money vitals carry cents (recognized revenue is exact to the
+        // reconciliation) — a non-integer target formats with 2 decimals.
+        const target = parseFloat(elm.getAttribute('data-count') || '0');
         const prefix = elm.getAttribute('data-prefix') || '';
-        if (reduced || target === 0) { elm.textContent = prefix + target.toLocaleString(); return; }
+        const fmt = (n: number) => Number.isInteger(target)
+          ? Math.round(n).toLocaleString()
+          : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (reduced || target === 0) { elm.textContent = prefix + fmt(target); return; }
         const t0 = performance.now(); const dur = 1400;
         const tick = (tm: number) => {
           let p = Math.min(1, (tm - t0) / dur); p = 1 - Math.pow(1 - p, 3);
-          elm.textContent = prefix + Math.round(target * p).toLocaleString();
+          elm.textContent = prefix + fmt(target * p);
           if (p < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
@@ -475,7 +480,8 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
               <div className="vital" role="listitem" key={v.k}>
                 <div className="k">{v.k}</div>
                 <div className={'v ' + (v.cls || '')} data-count={v.v} data-prefix={v.prefix || ''}>
-                  {(v.prefix || '') + v.v.toLocaleString()}
+                  {(v.prefix || '') + (Number.isInteger(v.v) ? v.v.toLocaleString()
+                    : v.v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </div>
                 <div className="s">{v.s}</div>
               </div>

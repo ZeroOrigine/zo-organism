@@ -34,7 +34,19 @@ export interface BooksMonth { month: string; cost_usd: number; revenue_usd: numb
 export interface BooksBirth { name: string; slug: string; born: string; status: string; cost: string }
 export interface BooksDonation { date: string; name: string; amount: string; product: string }
 export interface BooksProof { day: string; leaf_count: number; chained_root: string; solana_sig: string | null; solana_explorer: string | null }
-export interface BooksData { months: BooksMonth[]; births: BooksBirth[]; donations: BooksDonation[]; proofs: BooksProof[] }
+// #4492: the revenue reconciliation — gross to recognized, every reclass
+// itemized, plus the credits-outstanding liability.
+export interface BooksReconEntry { date: string; product: string; amount_cents: number; class: string }
+export interface BooksReconciliation {
+  gross_cents: number; test_drill_cents: number; refund_cents: number;
+  credits_reclass_cents: number; support_reclass_cents: number; recognized_cents: number;
+  credits: { purchased_cents: number; spent_cents: number; refunded_cents: number; converted_cents: number; outstanding_cents: number };
+  entries: BooksReconEntry[];
+}
+export interface BooksData {
+  months: BooksMonth[]; births: BooksBirth[]; donations: BooksDonation[]; proofs: BooksProof[];
+  reconciliation?: BooksReconciliation | null;
+}
 export interface LawVerdict { date: string; idea: string; verdict: string; score: number | null; reasoning: string }
 
 export async function getSiteState(): Promise<SiteState | null> {
