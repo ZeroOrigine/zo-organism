@@ -171,3 +171,7 @@
   .lawitem{background:var(--void-2);padding:16px 20px}
   .lawitem p{font-size:16px;color:var(--bone-dim);line-height:1.6;max-width:80ch}
   .lawhead{font-family:var(--mono);font-size:13.5px;letter-spacing:.8px;color:var(--life);margin-bottom:6px}
+
+  /* #4478: the deliberate replay control */
+  footer .witness{background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);font-family:var(--mono);font-size:13px;padding:6px 14px;border-radius:2px;cursor:pointer}
+  footer .witness:hover{color:var(--life);border-color:var(--life)}

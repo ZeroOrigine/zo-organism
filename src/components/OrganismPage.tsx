@@ -46,6 +46,21 @@ const BIRTH_LOG: Array<[string, string, string?]> = [
 ];
 
 const CLUSTER_THRESHOLD = 50;
+
+// #4478: after the birth completes or is skipped, this tab (session) and this
+// browser (7 days) have witnessed it. Failures are swallowed: storage that
+// cannot be written simply means the ceremony may play again.
+function markBorn() {
+  try { sessionStorage.setItem('zo_born', '1'); } catch { /* play again later */ }
+  try { localStorage.setItem('zo_born_at', String(Date.now())); } catch { /* play again later */ }
+}
+
+function witnessBirth() {
+  try { sessionStorage.setItem('zo_witness', '1'); } catch { /* the reload will just skip */ }
+  try { sessionStorage.removeItem('zo_born'); } catch { }
+  try { localStorage.removeItem('zo_born_at'); } catch { }
+  window.location.href = '/';
+}
 const BIRTHS_PREVIEW = 10;
 const GENES_PREVIEW = 8;
 
@@ -78,16 +93,52 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
   const previewGenes = useMemo(() => state.genes.slice(0, GENES_PREVIEW), [state.genes]);
 
   // ---------- the birth ----------
+  // #4478: the ceremony plays ONCE per arrival, not on every navigation.
+  // It plays only when ALL are true: no URL hash, no same-site referrer,
+  // no zo_born session flag, no return visit within 7 days — UNLESS the
+  // visitor asked for it (the footer's witness control sets zo_witness).
+  // Storage reads fail toward PLAYING: a blocked storage never mutes the birth.
   useEffect(() => {
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setReduced(rm);
     if (rm) { setAlive(true); return; }
+    let witness = false;
+    try {
+      witness = sessionStorage.getItem('zo_witness') === '1';
+      if (witness) sessionStorage.removeItem('zo_witness');
+    } catch { witness = false; }
+    if (!witness) {
+      let hasHash = false; let sameSite = false; let born = false; let recent = false;
+      try { hasHash = !!window.location.hash; } catch { hasHash = false; }
+      try {
+        const ref = document.referrer;
+        sameSite = !!ref && new URL(ref).origin === window.location.origin;
+      } catch { sameSite = false; }
+      try { born = sessionStorage.getItem('zo_born') === '1'; } catch { born = false; }
+      try {
+        const t = Number(localStorage.getItem('zo_born_at') || 0);
+        recent = t > 0 && Date.now() - t < 7 * 24 * 3600 * 1000;
+      } catch { recent = false; }
+      if (hasHash || sameSite || born || recent) {
+        setAlive(true);
+        if (hasHash) {
+          // the deep link lands on its target, not on the ceremony
+          setTimeout(() => {
+            try {
+              const el = document.querySelector(window.location.hash);
+              if (el) el.scrollIntoView();
+            } catch { /* an unscrollable hash is harmless */ }
+          }, 60);
+        }
+        return;
+      }
+    }
     let i = 0; let cancelled = false;
     const box = logRef.current;
     const timers: number[] = [];
     const next = () => {
       if (cancelled) return;
-      if (!box || i >= BIRTH_LOG.length) { timers.push(window.setTimeout(() => setAlive(true), 650)); return; }
+      if (!box || i >= BIRTH_LOG.length) { timers.push(window.setTimeout(() => { markBorn(); setAlive(true); }, 650)); return; }
       const e = BIRTH_LOG[i];
       const d = document.createElement('div');
       d.className = 'ln' + (e[2] ? ' ' + e[2] : '');
@@ -377,7 +428,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
             <div className="zero">0</div>
             <div id="birthlog" ref={logRef} />
           </div>
-          <button id="skipbirth" type="button" onClick={() => setAlive(true)}>skip the birth</button>
+          <button id="skipbirth" type="button" onClick={() => { markBorn(); setAlive(true); }}>skip the birth</button>
         </>
       )}
 
@@ -386,7 +437,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
         <span className="links">
           <a href="#hero">Organism</a><a href="#minds">Minds</a><a href="#births">Births</a>
           <a href="#graveyard">Graveyard</a><a href="#genome">Genome</a><a href="#books">Books</a>
-          <a href="/law">Law</a><a href="#support">Support</a>
+          <a href="/law">Law</a><a href="/economy">Economy</a><a href="#support">Support</a>
         </span>
       </nav>
 
@@ -569,6 +620,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
 
         <footer>
           <span>This website is run by the things it describes.</span>
+          <button className="witness" type="button" onClick={witnessBirth}>witness a birth</button>
           <span className="right">© ZeroOrigine · <Link href="/privacy">privacy</Link> · <Link href="/terms">terms</Link></span>
         </footer>
       </main>
