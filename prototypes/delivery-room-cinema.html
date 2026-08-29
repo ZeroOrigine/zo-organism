@@ -1,0 +1,224 @@
+<title>The Delivery Room Cinema</title>
+<style>
+  :root{
+    --space:#050807; --panel:#0a1210; --line:#1b2822; --bone:#e8e4d6; --dim:#8d978f;
+    --gold:#d4a94e; --green:#3bda8c; --red:#e0604c;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--space);color:var(--bone);font-family:var(--mono);overflow:hidden}
+  #ekg{position:fixed;inset:0;z-index:1}
+  .vignette{position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 42%,transparent 40%,rgba(5,8,7,.85) 100%)}
+
+  .hud{position:fixed;z-index:10}
+  #brand{top:20px;left:24px}
+  #brand .wm{font-family:var(--serif);font-size:18px;color:var(--bone)}
+  #brand .wm b{color:var(--green);font-weight:600}
+  #brand .sub{margin-top:3px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+  #preview-tag{top:20px;right:24px;text-align:right;font-size:9.5px;letter-spacing:.16em;color:var(--gold);
+    text-transform:uppercase;line-height:1.8}
+  #preview-tag span{color:var(--dim)}
+
+  #center{position:fixed;z-index:10;left:50%;top:34%;transform:translate(-50%,-50%);text-align:center;width:min(860px,92vw)}
+  #eyebrow{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--green)}
+  #title{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5.4vw,54px);line-height:1.08;margin:14px 0 10px;
+    color:var(--bone);text-wrap:balance;min-height:1.1em}
+  #title .cursor{display:inline-block;width:.55em;height:1em;background:var(--green);vertical-align:-0.12em;
+    animation:blink 1s steps(1) infinite;margin-left:2px}
+  @keyframes blink{50%{opacity:0}}
+  #meters{display:flex;gap:26px;justify-content:center;font-size:12px;color:var(--dim);margin-top:6px;flex-wrap:wrap}
+  #meters b{color:var(--bone);font-weight:500;font-variant-numeric:tabular-nums}
+  #hw{display:inline-block;margin-top:14px;padding:5px 14px;border:1px solid var(--green);border-radius:999px;
+    color:var(--green);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:0;transition:opacity 1s}
+  #hw.on{opacity:1}
+
+  #feed{position:fixed;z-index:10;left:50%;bottom:150px;transform:translateX(-50%);width:min(760px,90vw);
+    font-size:11.5px;line-height:2;color:var(--dim);text-align:center;min-height:66px}
+  #feed .ln{opacity:0;animation:rise .8s forwards}
+  #feed .ln b{color:var(--bone);font-weight:500}
+  #feed .ln .t{color:var(--green)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  #bar{position:fixed;z-index:10;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;
+    background:rgba(10,18,16,.85);border:1px solid var(--line);border-radius:999px;padding:8px 16px;backdrop-filter:blur(6px)}
+  #bar button{background:none;border:1px solid var(--line);color:var(--bone);font-family:var(--mono);font-size:11px;
+    border-radius:999px;padding:7px 16px;cursor:pointer;letter-spacing:.1em;transition:.2s}
+  #bar button:hover{border-color:var(--green);color:var(--green)}
+
+  /* certificate */
+  #cert-wrap{position:fixed;inset:0;z-index:15;display:flex;align-items:center;justify-content:center;
+    background:rgba(5,8,7,.78);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity 1.2s}
+  #cert-wrap.on{opacity:1;pointer-events:auto}
+  #cert{width:min(430px,90vw);background:linear-gradient(175deg,#0d1512,#080f0c);border:1px solid #2a3c33;border-radius:8px;
+    padding:34px 36px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(59,218,140,.07)}
+  #cert .head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:12px}
+  #cert .head .l{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--green)}
+  #cert .head .r{font-size:9px;color:var(--dim)}
+  #cert h3{font-family:var(--serif);font-weight:600;font-size:27px;margin:18px 0 4px;color:var(--bone);line-height:1.1}
+  #cert .born{font-size:10.5px;color:var(--dim);letter-spacing:.1em;margin-bottom:16px}
+  #cert .grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  #cert .cell{background:#0a120f;padding:10px 12px}
+  #cert .cell .k{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+  #cert .cell .v{font-size:14px;color:var(--bone);margin-top:3px;font-variant-numeric:tabular-nums}
+  #cert .cell .v.g{color:var(--green)}
+  #cert .anchor{margin-top:14px;font-size:9.5px;color:var(--dim);line-height:1.8}
+  #cert .anchor b{color:var(--gold);font-weight:500}
+  #cert .foot{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  #cert .foot .seal{width:34px;height:34px;border:1.5px solid var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:var(--green);font-family:var(--serif);font-size:15px}
+  #cert .foot .note{font-size:8.5px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;text-align:right;line-height:1.7}
+  #cert-close{position:absolute;top:26px;right:30px;background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer}
+  @media(max-width:640px){#preview-tag{display:none}#feed{bottom:120px}}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<canvas id="ekg"></canvas>
+<div class="vignette"></div>
+
+<div class="hud" id="brand">
+  <div class="wm">Zero<b>Origine</b></div>
+  <div class="sub">delivery room · cinema</div>
+</div>
+
+<div class="hud" id="preview-tag">design preview<br><span>real rows from the exam birth of 2026-08-29<br>remaining stages simulated for design review</span></div>
+
+<div class="hud" id="center">
+  <div id="eyebrow">delivery room · a birth is in flight</div>
+  <h1 id="title"><span id="title-text"></span><span class="cursor"></span></h1>
+  <div id="meters">
+    <span>run <b id="m-cost">$0.000000</b></span>
+    <span>tokens <b id="m-tok">0</b></span>
+    <span>open findings <b>0</b></span>
+    <span>heartbeat <b id="m-bpm">42</b></span>
+  </div>
+  <div id="hw">served by owned hardware</div>
+</div>
+
+<div class="hud" id="feed"></div>
+
+<div class="hud" id="bar">
+  <button id="play">begin the birth</button>
+  <button id="cert-btn">last birth's certificate</button>
+</div>
+
+<div id="cert-wrap">
+  <button id="cert-close" title="close">×</button>
+  <div id="cert">
+    <div class="head"><span class="l">Birth Certificate</span><span class="r">zeroorigine · the anchored ledger</span></div>
+    <h3>HomeschoolCompliance Pack</h3>
+    <div class="born">BORN 2026-08-18 · BIRTH 13 OF THE ORGANISM</div>
+    <div class="grid">
+      <div class="cell"><div class="k">build cost</div><div class="v">$111.19</div></div>
+      <div class="cell"><div class="k">genes harvested</div><div class="v g">7</div></div>
+      <div class="cell"><div class="k">status</div><div class="v">launched</div></div>
+      <div class="cell"><div class="k">open findings at birth</div><div class="v">0</div></div>
+    </div>
+    <div class="anchor">every ledger line of this birth is a leaf under an anchored root on <b>Solana mainnet</b> · a birth you can watch is a claim you can check</div>
+    <div class="foot">
+      <div class="seal">0</div>
+      <div class="note">no tokens exist ·<br>the machine keeps its own books</div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ————— stages: the real rail —————
+const STAGES=['research','the ethics mind','the adversary','approval','the builder','the qa mind','marketing','the front-door drill','launch'];
+// script: first events are REAL ledger rows from tonight's exam; the rest are labeled simulation
+const SCRIPT=[
+ {st:0,t:'23:18:25',real:1,txt:'<b>research_a</b> · qwen3:32b · 11,402 tokens · <b>$0.000000</b> · success',tok:11402,bpm:52},
+ {st:0,t:'23:43:27',real:1,txt:'<b>research_b</b> · generating on owned hardware · the delivery room is watching',tok:16400,bpm:56},
+ {st:1,real:0,txt:'the ethics mind reads the idea and rules: <b>proceed</b>',tok:19800,bpm:58},
+ {st:2,real:0,txt:'the adversary objects twice · both objections answered in writing',tok:24700,bpm:63},
+ {st:3,real:0,txt:'approval gate passes · the idea earns a body',tok:25100,bpm:66},
+ {st:4,real:0,txt:'<b>the builder</b> is at work · files forming · genes inherited from the library',tok:41200,bpm:74},
+ {st:5,real:0,txt:'the qa mind attacks its own sibling’s work · findings filed, cured, closed',tok:52600,bpm:79},
+ {st:6,real:0,txt:'marketing drafts under the voice laws · no claims, no prices, no persons',tok:56900,bpm:82},
+ {st:7,real:0,txt:'the front-door drill walks the deployed product like a stranger',tok:58800,bpm:88},
+ {st:8,real:0,txt:'<b>launch</b> · a name is chosen · the certificate mints',tok:60200,bpm:96},
+];
+// ————— canvas: EKG + constellation + gene shower —————
+const cv=document.getElementById('ekg'),cx=cv.getContext('2d');
+let W,H;function size(){W=cv.width=innerWidth*Math.min(devicePixelRatio,2);H=cv.height=innerHeight*Math.min(devicePixelRatio,2);
+  cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';}
+size();addEventListener('resize',size);
+const S=()=>Math.min(devicePixelRatio,2);
+let bpm=42,phase=0,stageIdx=-1,flash=0,shower=[],birthGlow=0;
+const trail=[];
+function stagePos(i){const n=STAGES.length,a=Math.PI*(1.12-0.24*0)+0;// arc across lower third
+  const t=i/(n-1),x=W*0.14+t*W*0.72,y=H*0.80-Math.sin(t*Math.PI)*H*0.10;return[x,y];}
+function frame(now){requestAnimationFrame(frame);cx.clearRect(0,0,W,H);const s=S();
+  // EKG line across mid-screen
+  phase+=bpm/60*0.016;
+  const yBase=H*0.56,amp=H*0.035*(1+birthGlow*2);
+  cx.beginPath();
+  for(let x=0;x<=W;x+=3*s){const u=(x/W*6+phase)%1;
+    let y=0;if(u<0.06)y=-Math.sin(u/0.06*Math.PI)*0.25;
+    else if(u<0.12)y=Math.sin((u-0.06)/0.06*Math.PI)*1.0;
+    else if(u<0.2)y=-Math.sin((u-0.12)/0.08*Math.PI)*0.35;
+    cx.lineTo(x,yBase-y*amp);}
+  cx.strokeStyle='rgba(59,218,140,'+(0.5+birthGlow*0.5)+')';cx.lineWidth=1.4*s;cx.stroke();
+  cx.save();cx.filter='blur('+6*s+'px)';cx.strokeStyle='rgba(59,218,140,'+(0.25+birthGlow*0.4)+')';cx.lineWidth=5*s;cx.stroke();cx.restore();
+  // constellation
+  for(let i=0;i<STAGES.length;i++){const[p,q]=stagePos(i);
+    const lit=i<=stageIdx,cur=i===stageIdx;
+    if(i>0&&i-1<=stageIdx){const[a,b]=stagePos(i-1);
+      cx.beginPath();cx.moveTo(a,b);cx.lineTo(p,q);
+      cx.strokeStyle=i<=stageIdx?'rgba(59,218,140,0.35)':'rgba(40,58,50,0.5)';cx.lineWidth=1*s;cx.stroke();}
+    cx.beginPath();cx.arc(p,q,(cur?5:3.4)*s,0,7);
+    cx.fillStyle=lit?(cur?'#d4a94e':'#3bda8c'):'#22322b';cx.fill();
+    if(lit){cx.save();cx.filter='blur('+5*s+'px)';cx.beginPath();cx.arc(p,q,(cur?11:7)*s,0,7);
+      cx.fillStyle=cur?'rgba(212,169,78,0.5)':'rgba(59,218,140,0.35)';cx.fill();cx.restore();}
+    cx.fillStyle=lit?'#8d978f':'#3d4a43';cx.font=(9*s)+'px JetBrains Mono,monospace';cx.textAlign='center';
+    cx.fillText(STAGES[i].toUpperCase(),p,q+18*s);}
+  // gene shower
+  shower.forEach(g=>{g.y+=g.v;g.v+=0.05*s;g.a-=0.006;
+    cx.globalAlpha=Math.max(0,g.a);cx.beginPath();cx.arc(g.x,g.y,g.r,0,7);cx.fillStyle=g.c;cx.fill();cx.globalAlpha=1;});
+  shower=shower.filter(g=>g.a>0&&g.y<H);
+  if(flash>0){cx.fillStyle='rgba(59,218,140,'+flash*0.16+')';cx.fillRect(0,0,W,H);flash-=0.01;}
+  birthGlow=Math.max(0,birthGlow-0.002);}
+requestAnimationFrame(frame);
+
+// ————— sequence engine —————
+const feed=document.getElementById('feed'),titleEl=document.getElementById('title-text');
+const mTok=document.getElementById('m-tok'),mBpm=document.getElementById('m-bpm'),mCost=document.getElementById('m-cost');
+let tokShown=0,tokTarget=0;
+setInterval(()=>{if(tokShown<tokTarget){tokShown=Math.min(tokTarget,tokShown+137);mTok.textContent=tokShown.toLocaleString();}},50);
+function addLine(html){const d=document.createElement('div');d.className='ln';d.innerHTML=html;
+  feed.appendChild(d);while(feed.children.length>3)feed.removeChild(feed.firstChild);}
+function typeTitle(text,done){titleEl.textContent='';let i=0;
+  const iv=setInterval(()=>{titleEl.textContent=text.slice(0,++i);if(i>=text.length){clearInterval(iv);done&&done();}},reduced?0:55);}
+let step=-1,timer=null,running=false;
+function next(){step++;
+  if(step>=SCRIPT.length){finale();return;}
+  const e=SCRIPT[step];stageIdx=e.st;bpm=e.bpm;mBpm.textContent=e.bpm;tokTarget=e.tok;flash=0.35;
+  addLine((e.t?'<span class="t">'+e.t+'</span> ':'')+e.txt+(e.real?'':' <span style="color:#5a665f">· simulated</span>'));
+  if(e.st===0&&e.real)document.getElementById('hw').classList.add('on');
+  timer=setTimeout(next,reduced?600:3400);}
+function finale(){bpm=118;mBpm.textContent='118';birthGlow=1;flash=1;
+  // gene shower
+  for(let i=0;i<90;i++)shower.push({x:Math.random()*W,y:-Math.random()*H*0.3,v:(1+Math.random()*2)*S(),
+    r:(1+Math.random()*2.2)*S(),a:0.9,c:Math.random()<0.75?'#d4a94e':'#3bda8c'});
+  document.getElementById('eyebrow').textContent='delivery room · a birth';
+  typeTitle('it has a name.',()=>{setTimeout(()=>{
+    typeTitle('the certificate mints.',()=>{setTimeout(()=>{
+      document.getElementById('cert-wrap').classList.add('on');
+      addLine('in the real room this certificate carries the newborn’s name, cost to the cent, and its anchor');
+      bpm=60;mBpm.textContent='60';running=false;
+      document.getElementById('play').textContent='replay the birth';},1400);});},1600);});}
+function start(){if(running)return;running=true;clearTimeout(timer);
+  step=-1;stageIdx=-1;tokShown=0;tokTarget=0;shower=[];
+  document.getElementById('cert-wrap').classList.remove('on');
+  feed.innerHTML='';document.getElementById('eyebrow').textContent='delivery room · a birth is in flight';
+  typeTitle('an unnamed idea is being born',()=>{timer=setTimeout(next,900);});}
+document.getElementById('play').onclick=start;
+document.getElementById('cert-btn').onclick=()=>document.getElementById('cert-wrap').classList.add('on');
+document.getElementById('cert-close').onclick=()=>document.getElementById('cert-wrap').classList.remove('on');
+document.getElementById('cert-wrap').addEventListener('click',e=>{if(e.target.id==='cert-wrap')e.target.classList.remove('on');});
+typeTitle('an unnamed idea is being born');
+</script>

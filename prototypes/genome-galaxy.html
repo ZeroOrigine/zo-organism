@@ -1,0 +1,323 @@
+<title>The Genome Galaxy</title>
+<style>
+  :root{
+    --space:#04070a; --panel:#0a1210; --line:#1c2a24; --bone:#e6e1d3; --dim:#8d978f;
+    --gold:#d4a94e; --green:#3bda8c; --cyan:#63d3c2; --red:#e0604c; --ember:#a06a58;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--space);color:var(--bone);font-family:var(--mono);overflow:hidden}
+  #stage{position:fixed;inset:0;cursor:grab}
+  #stage.dragging{cursor:grabbing}
+
+  .hud{position:fixed;z-index:10;pointer-events:none}
+  #brand{top:18px;left:22px}
+  #brand .wm{font-family:var(--serif);font-size:19px;letter-spacing:.01em;color:var(--bone)}
+  #brand .wm b{color:var(--green);font-weight:600}
+  #brand .sub{margin-top:4px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+  #counts{top:20px;right:22px;text-align:right;font-size:10.5px;letter-spacing:.1em;color:var(--dim);line-height:1.9}
+  #counts .g{color:var(--green)} #counts .q{color:var(--cyan)} #counts .b{color:var(--red)} #counts .a{color:var(--gold)}
+
+  #card{right:22px;top:88px;width:264px;background:rgba(10,18,16,.82);border:1px solid var(--line);
+    border-radius:6px;padding:16px 18px;backdrop-filter:blur(6px);opacity:0;transform:translateX(8px);
+    transition:opacity .5s,transform .5s}
+  #card.on{opacity:1;transform:none}
+  #card .eyebrow{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+  #card h2{font-family:var(--serif);font-weight:600;font-size:24px;margin:6px 0 10px;line-height:1.1;color:var(--bone)}
+  #card .row{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);padding:5px 0;border-top:1px solid var(--line)}
+  #card .row b{color:var(--bone);font-weight:500}
+  #card .st{display:inline-block;padding:2px 7px;border:1px solid currentColor;border-radius:3px;font-size:9.5px;letter-spacing:.12em}
+
+  #tip{position:fixed;z-index:12;pointer-events:none;background:rgba(10,18,16,.92);border:1px solid var(--line);
+    border-radius:4px;padding:7px 10px;font-size:10.5px;line-height:1.6;color:var(--bone);opacity:0;transition:opacity .15s;max-width:240px}
+  #tip .c{color:var(--dim)}
+
+  #bar{bottom:22px;left:50%;transform:translateX(-50%);pointer-events:auto;display:flex;align-items:center;gap:10px;
+    background:rgba(10,18,16,.82);border:1px solid var(--line);border-radius:999px;padding:8px 14px;backdrop-filter:blur(6px)}
+  #bar button{background:none;border:1px solid var(--line);color:var(--bone);font-family:var(--mono);font-size:11px;
+    border-radius:999px;padding:6px 12px;cursor:pointer;letter-spacing:.08em;transition:border-color .2s,color .2s}
+  #bar button:hover{border-color:var(--green);color:var(--green)}
+  #bar button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  #bar #play{min-width:74px}
+  #dots{display:flex;gap:5px;align-items:center}
+  #dots i{width:6px;height:6px;border-radius:50%;background:var(--line);cursor:pointer;transition:background .2s,transform .2s}
+  #dots i.on{background:var(--green);transform:scale(1.35)}
+  #dots i.dropped{border:1px solid var(--ember)}
+  #speed{min-width:44px}
+
+  .plabel{position:fixed;z-index:5;pointer-events:none;font-size:10px;letter-spacing:.12em;color:var(--dim);
+    transform:translate(-50%,-140%);white-space:nowrap;text-transform:lowercase;transition:opacity .3s}
+
+  #intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(4,7,10,.72);
+    backdrop-filter:blur(3px);transition:opacity .8s}
+  #intro.off{opacity:0;pointer-events:none}
+  #intro .box{text-align:center;max-width:520px;padding:0 24px}
+  #intro .eyebrow{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--green)}
+  #intro h1{font-family:var(--serif);font-weight:600;font-size:clamp(34px,6vw,56px);margin:14px 0 12px;color:var(--bone);line-height:1.05;text-wrap:balance}
+  #intro p{font-size:12.5px;line-height:1.9;color:var(--dim);margin:0 0 26px}
+  #intro button{background:none;border:1px solid var(--green);color:var(--green);font-family:var(--mono);
+    font-size:12px;letter-spacing:.18em;padding:13px 34px;border-radius:999px;cursor:pointer;transition:background .25s,color .25s}
+  #intro button:hover{background:var(--green);color:#04120b}
+  #foot{bottom:24px;left:22px;font-size:10px;color:var(--dim);letter-spacing:.08em}
+  @media(max-width:720px){#card{display:none}#counts{display:none}#foot{display:none}#dots{display:none}}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<div id="stage"></div>
+
+<div class="hud" id="brand">
+  <div class="wm">Zero<b>Origine</b></div>
+  <div class="sub">the genome, as a galaxy</div>
+</div>
+
+<div class="hud" id="counts"></div>
+
+<div class="hud" id="card">
+  <div class="eyebrow" id="c-eyebrow"></div>
+  <h2 id="c-title"></h2>
+  <div id="c-rows"></div>
+</div>
+
+<div id="tip"></div>
+
+<div class="hud" id="bar">
+  <button id="prev" title="previous (left arrow)">◀</button>
+  <button id="play" title="play or pause (space)">descend</button>
+  <button id="next" title="next (right arrow)">▶</button>
+  <div id="dots"></div>
+  <button id="speed" title="tour speed">1x</button>
+</div>
+
+<div class="hud" id="foot">drag to orbit · wheel to zoom · hover a body to read it · every count on this page is a database read</div>
+
+<div id="intro">
+  <div class="box">
+    <div class="eyebrow">the delivery of every birth, kept</div>
+    <h1>The Genome Galaxy</h1>
+    <p id="intro-line"></p>
+    <button id="enter">DESCEND INTO THE GENOME</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
+<script>
+'use strict';
+// ————— REAL DATA · exported from the machine's ledger 2026-08-29 —————
+const GENES=[["eligibility_date_engine","build","zo-retainagerecover",0],["QA-pdf_generation_testing","general",null,4],["supabase_storage","general",null,23],["QA-email_delivery_testing","general",null,19],["supabase_database","general",null,32],["Voice & Speech Processing","general",null,0],["cron_alert_dispatcher","infrastructure","zo-lienclock",0],["Marketing: Grant Matching Products","general",null,0],["milestone_release_tracker","build","zo-retainrelease",0],["QA-data_validation_testing","general",null,0],["QA-mobile_responsiveness","general",null,2],["QA-invoice_generation_testing","general",null,15],["QA-data_export_testing","general",null,1],["QA-subscription_billing_testing","general",null,1],["Data Pipeline & External API Aggregation","general",null,0],["Calendar & Scheduling Integration","general",null,0],["AI as Product Feature (Claude API)","general",null,0],["QA: Equity & Education Email Products","general",null,0],["QA: Grant Matching & Government Data","general",null,0],["QA: Invoice OCR & Intelligence","general",null,0],["QA: Voice Interface Products","general",null,0],["QA: Meeting Cost Calculator","general",null,0],["Marketing: Equity & Education Products","general",null,0],["Marketing: Invoice Intelligence Products","general",null,0],["Marketing: Voice Interface Products","general",null,0],["Marketing: Meeting Cost Products","general",null,0],["seo_meta","general",null,33],["landing_page","general",null,33],["supabase_auth","general",null,32],["shadcn_ui","general",null,32],["stripe_subscriptions","general",null,31],["nextjs_api_routes","general",null,33],["analytics","general",null,31],["nextjs_app_router","general",null,33],["file_upload","general",null,19],["stripe_payments","general",null,22],["react_hooks","general",null,33],["invoice_generation","general",null,15],["invoice_tracking","general",null,15],["reporting_dashboard","general",null,15],["payment_reminders","general",null,13],["multi_currency","general",null,5],["client_management","general",null,15],["expense_tracking","general",null,15],["Launch: Email Newsletter Products","general",null,0],["Launch: Government Data Products","general",null,0],["Launch: OCR & AI Processing Products","general",null,0],["Launch: Voice-Enabled Products","general",null,0],["Launch: Calendar & Real-Time Products","general",null,0],["release_invoice_templating","payments","zo-retainagerecover",0],["QA-data_privacy_compliance","general",null,13],["search_functionality","general",null,6],["deadline_notifications","general",null,0],["retainage_calculation_engine","build","zo-retainrelease",0],["tailwind_css","general",null,33],["QA-database_sync_testing","general",null,0],["QA-notification_delivery","general",null,0],["QA-search_performance","general",null,0],["QA-subscription_billing_flow","general",null,0],["admin_dashboard","general",null,22],["MKT-pain_point_messaging","general",null,15],["application_tracking","general",null,1],["document_management","general",null,1],["grant_database_integration","general",null,1],["matching_algorithm","general",null,1],["deadline_calculator","build","zo-lienclock",0],["MKT-small_business_targeting","general",null,15],["MKT-time_saving_benefits","general",null,1],["MKT-content_marketing_focus","general",null,1],["MKT-professional_credibility","general",null,1],["MKT-social_proof_strategy","general",null,5],["MKT-avoid_guarantee_claims","general",null,0],["MKT-funding_pain_points","general",null,0],["MKT-linkedin_b2b_focus","general",null,0],["LAUNCH-compliance_documentation","general",null,0],["LAUNCH-email_deliverability","general",null,0],["LAUNCH-grant_database_seeding","general",null,0],["LAUNCH-grants_gov_api_access","general",null,0],["LAUNCH-stripe_connect_setup","general",null,0],["QA-payment_flow_testing","general",null,27],["QA-grant_matching_accuracy","general",null,1],["MKT-nonprofit_audience","general",null,1],["notification_system","general",null,0],["QA-deadline_notification_testing","general",null,0],["QA-document_upload_testing","general",null,0],["QA-search_functionality_testing","general",null,0],["MKT-compliance_trust_building","general",null,0],["MKT-professional_network_channels","general",null,0],["MKT-success_rate_positioning","general",null,0],["MKT-time_saving_messaging","general",null,0],["QA-performance_testing","general",null,4],["LAUNCH-monitoring_alerts","general",null,4],["MKT-roi_messaging","general",null,2],["QA-data_accuracy_testing","general",null,15],["MKT-roi_focused_content","general",null,1],["LAUNCH-backup_strategy","general",null,22],["LAUNCH-data_compliance_setup","general",null,0],["LAUNCH-email_service_configuration","general",null,0],["LAUNCH-grant_database_partnerships","general",null,0],["retainage_calculator","build","zo-retainagerecover",0],["LAUNCH-stripe_account_setup","general",null,19],["QA-pdf_compatibility_testing","general",null,7],["LAUNCH-domain_ssl_setup","general",null,10],["QA-backup_recovery_testing","general",null,5],["job_tracker","build","zo-lienclock",0],["QA-compliance_testing","general",null,6],["LAUNCH-monitoring_setup","general",null,19],["compliance_calendar_generation","testing","zo-homeschoolcompliance-pack",0],["QA-reminder_automation_testing","general",null,3],["QA-email_deliverability_testing","general",null,3],["MKT-channel_priority","general",null,7],["MKT-feature_comparison","general",null,2],["MKT-channel_priority","general",null,7],["QA-multi_tenant_testing","general",null,11],["QA-eligibility_trigger_testing","qa","zo-retainagerecover",0],["LAUNCH-tax_compliance_research","general",null,9],["LAUNCH-customer_support_setup","general",null,2],["QA-pwa_offline_flow_testing","general",null,0],["QA-team_mode_permission_testing","general",null,0],["meeting_cost_calculator","general",null,0],["LAUNCH-support_system","general",null,1],["meeting_reports","general",null,0],["LAUNCH-rate_limiting_setup","general",null,8],["LAUNCH-email_service_setup","general",null,15],["LAUNCH-compliance_review","general",null,2],["LAUNCH-gdpr_compliance_setup","general",null,6],["LAUNCH-pdf_service_setup","general",null,2],["LAUNCH-email_service_setup","general",null,15],["LAUNCH-domain_configuration","general",null,4],["voice_navigable_invoice_history","general",null,0],["MKT-trust_building","general",null,5],["MKT-accessibility_positioning","general",null,0],["team_mode","general",null,0],["LAUNCH-backup_monitoring","general",null,5],["QA-invoice_number_collision_testing","general",null,0],["QA-retainage_math_validation","testing","zo-retainagerecover",0],["LAUNCH-domain_dns_config","general",null,0],["legal_disclaimer_layer","build","zo-lienclock",0],["QA-accessibility_wcag_audit","general",null,3],["QA-user_permission_testing","general",null,0],["LAUNCH-tax_compliance","general",null,0],["LAUNCH-invoice_templates","general",null,1],["mobile_responsive: (via tailwind_css)","build","zo-homeschoolcompliance-pack",0],["notice_of_intent_templating","build","zo-homeschoolcompliance-pack",0],["QA-accessibility_testing","general",null,2],["MKT-feature_benefit_mapping","general",null,3],["MKT-pricing_psychology","general",null,3],["team_management","general",null,0],["QA-calendar_sync_testing","general",null,0],["LAUNCH-gdpr_compliance","general",null,3],["user_permissions","general",null,0],["QA-authentication_security","general",null,0],["QA-cross_browser_compatibility","general",null,0],["LAUNCH-domain_graduation","deployment","zo-rigfile",6],["QA-security_testing","general",null,0],["LAUNCH-backup_system_setup","general",null,0],["LAUNCH-legal_compliance","general",null,0],["LAUNCH-tax_compliance_setup","general",null,0],["LAUNCH-pricing_strategy","general",null,1],["payment_tracking","general",null,1],["recurring_invoices","general",null,1],["QA-multi_currency_testing","general",null,1],["QA-cost_calculation_accuracy","general",null,0],["QA-payment_processing","general",null,0],["QA-responsive_design_testing","general",null,0],["MKT-b2b_messaging","general",null,0],["MKT-saas_channels","general",null,0],["MKT-saas_positioning","general",null,0],["LAUNCH-analytics_setup","general",null,1],["invoice_template_system","general",null,1],["usage_quota_enforcement","general",null,0],["QA-mobile_ux_testing","general",null,0],["QA-quota_enforcement_testing","general",null,0],["QA-voice_parsing_accuracy_benchmark","general",null,0],["MKT-demo_video_strategy","general",null,0],["LAUNCH-security_audit","general",null,0],["QA-data_privacy_gdpr_compliance","general",null,1],["pwa_offline_support","general",null,0],["MKT-feature_benefits_copy","general",null,0],["voice_navigation","general",null,0],["MKT-roi_positioning","general",null,5],["QA-multi_timezone_testing","general",null,0],["MKT-freemium_strategy","general",null,1],["MKT-content_marketing","general",null,3],["team_mode_business_tier","general",null,0],["QA-pdf_generation_correctness","general",null,0],["QA-rate_limiting_abuse_prevention","general",null,0],["QA-web_speech_api_browser_compatibility","general",null,0],["ce_hour_ledger","build","zo-renewalradar-ce",0],["user_profile","general",null,31],["state_compliance_ruleset","testing","zo-homeschoolcompliance-pack",0],["MKT-trust_building","general",null,5],["QA-reminder_system_testing","general",null,0],["LAUNCH-pdf_service_integration","general",null,0],["LAUNCH-support_system_setup","general",null,0],["MKT-avoid_micromanagement_messaging","general",null,0],["MKT-b2b_saas_channels","general",null,0],["MKT-enterprise_positioning","general",null,0],["MKT-meeting_culture_pain_points","general",null,0],["MKT-productivity_focused_messaging","general",null,0],["certificate_vault","build","zo-renewalradar-ce",0],["LAUNCH-calendar_api_credentials","general",null,0],["LAUNCH-privacy_policy_terms","general",null,0],["QA-subscription_flow_testing","general",null,1],["MKT-roi_value_proposition","general",null,12],["QA-cron_alert_integrity_testing","infrastructure","zo-lienclock",0],["MKT-simplicity_positioning","general",null,0],["LAUNCH-pdf_generation_service","general",null,0],["LAUNCH-gdpr_privacy_policy","general",null,1],["LAUNCH-invoice_template_library","general",null,0],["calendar_integration","general",null,0],["cost_alerts","general",null,0],["meeting_analytics","general",null,0],["REF: Next.js App Router Standard Structure + Patterns","general",null,9],["voice_capture_engine","general",null,1],["ai_invoice_parser","general",null,1],["saas_onboarding","general",null,0],["subscription_management","general",null,0],["QA-email_sms_delivery_testing","general",null,2],["REF: Supabase Auth + Next.js App Router","general",null,3],["REF: Stripe Checkout + Webhooks for Next.js","general",null,3],["QA-performance_benchmarking","general",null,0],["QA-stripe_subscription_flow_testing","general",null,0],["sms_delivery","general",null,3],["MKT-competitor_differentiation","general",null,12],["accessibility_engine","general",null,0],["cron_jobs","general",null,11],["invoice_status_management","general",null,0],["invoice_usage_metering","general",null,0],["pwa_configuration","general",null,0],["sms_invoice_delivery","general",null,0],["business_profile_setup","general",null,1],["invoice_confirmation_ui","general",null,1],["one_tap_send","general",null,1],["pdf_invoice_generator","general",null,1],["rate_limiting","general",null,1],["invoice_numbering_system","general",null,0],["MKT-emotional_triggers","general",null,0],["MKT-hero_messaging_hook","general",null,0],["MKT-pricing_messaging","general",null,0],["MKT-primary_audience_segment","general",null,0],["MKT-referral_mechanic","general",null,0],["MKT-secondary_audience_segment","general",null,0],["MKT-trust_signals","general",null,0],["MKT-what_not_to_say","general",null,0],["LAUNCH-anthropic_api_account","general",null,0],["LAUNCH-app_store_pwa_listing","general",null,0],["LAUNCH-beta_user_recruitment","general",null,0],["LAUNCH-claude_api_rate_limit_monitoring","general",null,0],["LAUNCH-domain_dns_configuration","general",null,12],["LAUNCH-env_vars_checklist","general",null,0],["QA-deadline_calculation_accuracy","qa","zo-lienclock",0],["LAUNCH-netlify_deployment_setup","general",null,0],["LAUNCH-pdf_generation_dependency_deploy","general",null,0],["LAUNCH-posthog_analytics_setup","general",null,0],["LAUNCH-pre_launch_invoice_test","general",null,0],["LAUNCH-privacy_policy_terms_of_service","general",null,0],["LAUNCH-resend_email_setup","general",null,0],["LAUNCH-stripe_webhook_registration","general",null,0],["LAUNCH-supabase_project_setup","general",null,0],["LAUNCH-supabase_storage_bucket_policy","general",null,0],["LAUNCH-web_speech_api_https_requirement","general",null,0],["renewal_countdown_engine","build","zo-renewalradar-ce",0],["email_notifications","general",null,32],["QA-pdf_output_testing","media","zo-homeschoolcompliance-pack",0],["LAUNCH-twilio_account_setup","general",null,1],["LAUNCH-monitoring_error_tracking","general",null,12],["renewal_csv_import","media","zo-renewalradar",0],["renewal_reminder_engine","build","zo-renewalradar",0],["renewal_tracker_core","build","zo-renewalradar",0],["spend_analytics_dashboard","ui","zo-renewalradar",0],["react_forms","build","zo-renewalradar",11],["user_settings","build","zo-renewalradar",10],["QA-api_endpoint_testing","qa","zo-renewalradar",10],["csv_export","media","zo-renewalradar",6],["QA-error_handling_testing","infrastructure","zo-renewalradar",11],["QA-auth_flow_testing","auth","zo-renewalradar",10],["QA-form_validation_testing","ui","zo-renewalradar",11],["QA-mobile_responsive_testing","qa","zo-renewalradar",11],["QA-cron_reminder_accuracy_testing","infrastructure","zo-renewalradar",1],["calendar_export","media","zo-renewalradar",1],["MKT-channel_strategy","marketing","zo-renewalradar",11],["MKT-target_audience_analysis","marketing","zo-renewalradar",11],["LAUNCH-cron_scheduler_setup","infrastructure","zo-renewalradar",3],["LAUNCH-stripe_product_setup","payments","zo-renewalradar",10],["QA-performance_benchmarks","general",null,3],["LAUNCH-error_alerting","infrastructure","zo-renewalradar",11],["LAUNCH-ssl_certificate","deployment","zo-renewalradar",11],["LAUNCH-env_vars_configuration","deployment","zo-renewalradar",11],["file_preview","media","zo-rigfile",0],["state_ce_rules_engine","build","zo-renewalradar-ce",1],["MKT-social_media_launch","marketing","zo-renewalradar",1],["MKT-competitor_positioning","marketing","zo-renewalradar",11],["LAUNCH-cron_schedule_configuration","infrastructure","zo-lienclock",0],["QA-state_ruleset_accuracy_audit","testing","zo-homeschoolcompliance-pack",0],["MKT-seo_content_strategy","general",null,12],["REF: Supabase Row Level Security Patterns","general",null,11],["file_sharing_links","media","zo-rigfile",0],["file_versioning","media","zo-rigfile",0],["folder_organization","build","zo-rigfile",0],["storage_quota_management","database","zo-rigfile",0],["QA-ce_rules_accuracy_testing","qa","zo-renewalradar-ce",0],["PDF & Document Generation","general",null,1],["broker_request_drafter","build","zo-subcompliance",0],["coi_document_parsing","build","zo-subcompliance",0],["compliance_requirement_tracker","testing","zo-subcompliance",0],["QA-rate_limit_testing","infrastructure","zo-rigfile",1],["QA-client_directory_deduplication","general",null,3],["LAUNCH-legal_disclaimer_review","launch","zo-lienclock",1],["LAUNCH-state_ruleset_content_load","marketing","zo-homeschoolcompliance-pack",0],["expiration_monitoring_engine","infrastructure","zo-subcompliance",0],["mobile_responsive_ui","ui","zo-subcompliance",0],["QA-expiration_logic_testing","qa","zo-subcompliance",0],["reminder_scheduler","build","zo-famcomply",1],["QA-countdown_alert_timing_testing","qa","zo-renewalradar-ce",0],["deadline_reminder_engine","compliance","harvested-from-7-products",0],["MKT-testimonial_collection","marketing","zo-subcompliance",5],["renewal_timeline_engine","build","zo-famcomply",0],["state_license_ruleset","build","zo-famcomply",0],["task_checklist_tracking","build","zo-famcomply",0],["QA-compliance_data_accuracy","testing","zo-famcomply",0],["QA-reminder_scheduling_testing","qa","zo-famcomply",0],["LAUNCH-state_ruleset_seeding","launch","zo-famcomply",0],["accessibility_layer","general",null,1],["academic_integrity_guardrails","build","zo-julley",0],["claude_haiku_lesson_generation","build","zo-julley",0],["multilingual_language_selector","build","zo-julley",0],["rtl_script_rendering","build","zo-julley",0],["static_dedication_pages","build","zo-julley",0],["zero_data_architecture","build","zo-julley",0],["QA-guardrail_refusal_testing","qa","zo-julley",0],["QA-multilingual_output_testing","qa","zo-julley",0],["QA-rtl_rendering_testing","qa","zo-julley",0],["LAUNCH-anthropic_spend_controls","launch","zo-julley",0],["client_directory","general",null,2],["LAUNCH-email_domain_authentication","communication","zo-subcompliance",1],["LAUNCH-sms_provider_registration","communication","zo-renewalradar-ce",1],["invoice_reminder_automation","payments","zo-retainrelease",0],["bulk_pdf_resend","communication","zo-certrelay",0],["coi_expiration_tracking","build","zo-certrelay",0],["ai_deadline_parser","build","zo-portalpulse",0],["deadline_reminder_engine","build","zo-portalpulse",0],["inbound_email_ingestion","communication","zo-portalpulse",0],["unified_calendar_view","build","zo-portalpulse",0],["QA-parser_accuracy_testing","qa","zo-portalpulse",0],["LAUNCH-email_provider_setup","communication","zo-portalpulse",0],["Email Integration & Automation","general",null,11],["LAUNCH-state_rules_data_seeding","launch","zo-renewalradar-ce",1]];
+const HARVEST={"nextjs-app-router":"blocked","landing-page":"pushed","seo-meta":"pushed","tailwind-css":"queued","react-hooks":"queued","nextjs-api-routes":"queued","supabase-database":"queued","email-notifications":"queued"};
+const PRODUCTS=[["InvoiceMemory","launched","2026-03-22"],["GrantMatch","dropped","2026-03-22"],["MeetingCost","live","2026-03-22"],["EquityLetter","live","2026-03-22"],["VoiceInvoice","launched","2026-03-22"],["Soly","live","2026-07-06"],["TEF Master","live","2026-07-06"],["RenewalRadar","launched","2026-07-10"],["RigFile","launched","2026-07-11"],["SubCompliance","launched","2026-07-15"],["FamComply","launched","2026-07-15"],["Julley","launched","2026-07-15"],["CertRelay","dropped","2026-07-17"],["PortalPulse","dropped","2026-07-17"],["RenewalRadar CE","launched","2026-08-14"],["RetainageRecover","launched","2026-08-14"],["LienClock","launched","2026-08-17"],["NoticeForge","dropped","2026-08-17"],["RetainRelease","dropped","2026-08-18"],["HomeschoolCompliance Pack","launched","2026-08-18"]];
+const PRODUCT_SLUG={"zo-renewalradar":"RenewalRadar","zo-rigfile":"RigFile","zo-subcompliance":"SubCompliance","zo-famcomply":"FamComply","zo-julley":"Julley","zo-certrelay":"CertRelay","zo-portalpulse":"PortalPulse","zo-renewalradar-ce":"RenewalRadar CE","zo-retainagerecover":"RetainageRecover","zo-lienclock":"LienClock","zo-retainrelease":"RetainRelease","zo-homeschoolcompliance-pack":"HomeschoolCompliance Pack"};
+
+// ————— derived, honest counts —————
+const slugify=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const statusOf=g=>HARVEST[slugify(g[0])]||'gestation';
+const foundation=GENES.filter(g=>!g[2]||g[2]==='harvested-from-7-products');
+const byProduct={};GENES.forEach(g=>{const p=PRODUCT_SLUG[g[2]];if(p){(byProduct[p]=byProduct[p]||[]).push(g);}});
+const nPushed=GENES.filter(g=>statusOf(g)==='pushed').length;
+const nQueued=GENES.filter(g=>statusOf(g)==='queued').length;
+const nBlocked=GENES.filter(g=>statusOf(g)==='blocked').length;
+const nGest=GENES.length-nPushed-nQueued-nBlocked;
+document.getElementById('counts').innerHTML=
+  GENES.length+' genes · '+PRODUCTS.length+' births<br>'+
+  '<span class="g">'+nPushed+' in the genome</span><br>'+
+  '<span class="q">'+nQueued+' queued for review</span><br>'+
+  '<span class="a">'+nGest+' in gestation</span><br>'+
+  '<span class="b">'+nBlocked+' held back</span>';
+document.getElementById('intro-line').textContent=
+  GENES.length+' genes orbit '+PRODUCTS.length+' births. The founding pool holds '+foundation.length+
+  ' of them at the galactic core. Dropped products burn as dim embers. Nothing here is invented: every body is a row in the anchored ledger.';
+
+// ————— three.js scene —————
+const COL={space:0x04070a,gold:0xd4a94e,green:0x3bda8c,cyan:0x63d3c2,red:0xe0604c,ember:0xa06a58,sun:0xf2e9d5,core:0xbfe8cf};
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(COL.space);
+scene.fog=new THREE.FogExp2(COL.space,0.0016);
+const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,4000);
+scene.add(new THREE.AmbientLight(0xffffff,0.55));
+const keyLight=new THREE.PointLight(0xfff4dc,1.1,0,0);keyLight.position.set(0,120,0);scene.add(keyLight);
+
+// glow sprite texture
+function glowTex(hex){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  const g=x.createRadialGradient(64,64,0,64,64,64);const col=new THREE.Color(hex);
+  const rgb=Math.round(col.r*255)+','+Math.round(col.g*255)+','+Math.round(col.b*255);
+  g.addColorStop(0,'rgba('+rgb+',0.9)');g.addColorStop(0.35,'rgba('+rgb+',0.28)');g.addColorStop(1,'rgba('+rgb+',0)');
+  x.fillStyle=g;x.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);}
+const TEX={gold:glowTex(COL.gold),green:glowTex(COL.green),cyan:glowTex(COL.cyan),red:glowTex(COL.red),sun:glowTex(COL.sun),ember:glowTex(COL.ember),core:glowTex(COL.core)};
+
+// starfield
+(function(){const n=2600,pos=new Float32Array(n*3);let s=42;const rnd=()=> (s=(s*16807)%2147483647)/2147483647;
+  for(let i=0;i<n;i++){const r=600+rnd()*1600,th=rnd()*Math.PI*2,ph=Math.acos(2*rnd()-1);
+    pos[i*3]=r*Math.sin(ph)*Math.cos(th);pos[i*3+1]=r*Math.cos(ph)*0.6;pos[i*3+2]=r*Math.sin(ph)*Math.sin(th);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x4a5a52,size:1.6,sizeAttenuation:true,transparent:true,opacity:0.8})));})();
+
+let seed=7;const rnd=()=> (seed=(seed*16807)%2147483647)/2147483647;
+const sphereGeo=new THREE.SphereGeometry(1,20,16);
+const MAT={gold:new THREE.MeshLambertMaterial({color:COL.gold,emissive:COL.gold,emissiveIntensity:0.25}),
+  green:new THREE.MeshLambertMaterial({color:COL.green,emissive:COL.green,emissiveIntensity:0.55}),
+  cyan:new THREE.MeshLambertMaterial({color:COL.cyan,emissive:COL.cyan,emissiveIntensity:0.45}),
+  red:new THREE.MeshLambertMaterial({color:COL.red,emissive:COL.red,emissiveIntensity:0.5}),
+  sun:new THREE.MeshBasicMaterial({color:COL.sun}),ember:new THREE.MeshBasicMaterial({color:COL.ember})};
+const statusKey=s=>s==='pushed'?'green':s==='queued'?'cyan':s==='blocked'?'red':'gold';
+const pickables=[];
+function addGlow(obj,key,scale){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:TEX[key],transparent:true,depthWrite:false}));
+  sp.scale.setScalar(scale);obj.add(sp);return sp;}
+function planetSize(u){return 0.5+Math.log2(u+2)*0.30;}
+
+// ————— the core: founding pool —————
+const coreGroup=new THREE.Group();scene.add(coreGroup);
+const coreStar=new THREE.Mesh(new THREE.SphereGeometry(4.6,28,22),new THREE.MeshBasicMaterial({color:COL.core}));
+coreStar.userData={kind:'core'};addGlow(coreStar,'core',34);coreGroup.add(coreStar);pickables.push(coreStar);
+foundation.forEach((g,i)=>{
+  const st=statusOf(g),k=statusKey(st);
+  const m=new THREE.Mesh(sphereGeo,MAT[k]);
+  const r=11+34*Math.sqrt(rnd()),th=rnd()*Math.PI*2,y=(rnd()*2-1);
+  m.position.set(r*Math.cos(th),y*10*(1-r/60),r*Math.sin(th));
+  m.scale.setScalar(planetSize(g[3]));
+  m.userData={kind:'gene',g,st,home:'the founding pool'};
+  if(st!=='gestation')addGlow(m,k,7);
+  coreGroup.add(m);pickables.push(m);
+});
+
+// ————— product suns on a spiral arm —————
+const suns=[];const orbiters=[];
+PRODUCTS.forEach((p,i)=>{
+  const [name,pstat]=p;
+  const ang=i*0.585+2.1,r=78+i*10.6,y=Math.sin(i*1.63)*13;
+  const group=new THREE.Group();group.position.set(r*Math.cos(ang),y,r*Math.sin(ang));scene.add(group);
+  const dead=pstat==='dropped';
+  const sun=new THREE.Mesh(new THREE.SphereGeometry(dead?1.9:3.0,24,18),dead?MAT.ember:MAT.sun);
+  sun.userData={kind:'sun',name,pstat,d:p[2],i};
+  addGlow(sun,dead?'ember':'sun',dead?11:22);group.add(sun);pickables.push(sun);
+  const genes=byProduct[name]||[];
+  genes.forEach((g,j)=>{
+    const st=statusOf(g),k=statusKey(st);
+    const m=new THREE.Mesh(sphereGeo,MAT[k]);
+    m.scale.setScalar(planetSize(g[3]));
+    m.userData={kind:'gene',g,st,home:name};
+    if(st!=='gestation')addGlow(m,k,6);
+    group.add(m);pickables.push(m);
+    orbiters.push({m,R:6+j*1.9,tilt:(rnd()-0.5)*0.9,phase:rnd()*Math.PI*2,speed:(dead?0.02:0.09)/Math.pow(1+j*0.35,0.7)});
+  });
+  // faint lineage line to the core
+  const lg=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),group.position.clone().negate()]);
+  group.add(new THREE.Line(lg,new THREE.LineBasicMaterial({color:0x14231d,transparent:true,opacity:0.55})));
+  suns.push({group,sun,name,pstat,d:p[2],genes,dead});
+});
+
+// ————— DOM labels for suns + core —————
+const labels=[];
+function mkLabel(text,cls){const el=document.createElement('div');el.className='plabel';el.textContent=text;document.body.appendChild(el);return el;}
+labels.push({el:mkLabel('the founding pool'),getPos:()=>coreGroup.position});
+suns.forEach(s=>{const el=mkLabel(s.name.toLowerCase());if(s.dead)el.style.color='var(--ember)';labels.push({el,getPos:()=>s.group.position});});
+
+// ————— camera rig + tour —————
+const rig={target:new THREE.Vector3(0,0,0),radius:430,theta:0.9,phi:1.12};
+function applyRig(){const t=rig.target,r=rig.radius,st=Math.sin(rig.phi),ct=Math.cos(rig.phi);
+  camera.position.set(t.x+r*st*Math.cos(rig.theta),t.y+r*ct,t.z+r*st*Math.sin(rig.theta));camera.lookAt(t);}
+const stops=[];
+stops.push({name:'the galaxy',eyebrow:'overview',get:()=>({target:new THREE.Vector3(0,0,0),radius:430}),
+  rows:()=>[['genes',GENES.length],['births',PRODUCTS.length],['in the genome',nPushed],['queued for review',nQueued],['held back',nBlocked]]});
+stops.push({name:'the founding pool',eyebrow:'galactic core',get:()=>({target:coreGroup.position.clone(),radius:95}),
+  rows:()=>[['genes in the pool',foundation.length],['most used','seo_meta · 33 builds'],['status','feeding every birth']]});
+suns.forEach(s=>{stops.push({name:s.name,eyebrow:'birth · '+s.d,sun:s,
+  get:()=>({target:s.group.position.clone(),radius:s.dead?26:34}),
+  rows:()=>{const top=[...s.genes].sort((a,b)=>b[3]-a[3])[0];
+    return [['status',s.pstat.toUpperCase()],['genes harvested',s.genes.length],
+      ...(top?[['notable gene',top[0].length>22?top[0].slice(0,22)+'…':top[0]]]:[["harvest","foundation era"]])];}});});
+
+let cur=0,playing=false,speedIdx=1;const SPEEDS=[0.5,1,2];
+let flight=null,holdT=0;const HOLD=7.5;
+const card=document.getElementById('card');
+function showCard(stop){document.getElementById('c-eyebrow').textContent=stop.eyebrow;
+  document.getElementById('c-title').textContent=stop.name;
+  const stCol=stop.sun?(stop.sun.dead?'var(--ember)':(stop.sun.pstat==='live'?'var(--green)':'var(--bone)')):'var(--green)';
+  document.getElementById('c-rows').innerHTML=stop.rows().map(r=>'<div class="row"><span>'+r[0]+'</span><b style="color:'+(r[0]==='status'?stCol:'var(--bone)')+'">'+r[1]+'</b></div>').join('');
+  card.classList.add('on');}
+function goTo(i,instant){cur=(i+stops.length)%stops.length;const s=stops[cur],dest=s.get();
+  document.querySelectorAll('#dots i').forEach((d,j)=>d.classList.toggle('on',j===cur));
+  showCard(s);holdT=0;
+  if(instant){rig.target.copy(dest.target);rig.radius=dest.radius;flight=null;return;}
+  flight={t0:performance.now(),dur:2600/SPEEDS[speedIdx],from:{target:rig.target.clone(),radius:rig.radius,theta:rig.theta},
+    to:{target:dest.target,radius:dest.radius,theta:rig.theta+0.9}};}
+const ease=t=>t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+
+// dots
+const dotsEl=document.getElementById('dots');
+stops.forEach((s,i)=>{const d=document.createElement('i');if(s.sun&&s.sun.dead)d.classList.add('dropped');
+  d.title=s.name;d.onclick=()=>{goTo(i);};dotsEl.appendChild(d);});
+
+// controls
+const playBtn=document.getElementById('play');
+function setPlaying(v){playing=v;playBtn.textContent=v?'pause':'descend';}
+playBtn.onclick=()=>setPlaying(!playing);
+document.getElementById('next').onclick=()=>goTo(cur+1);
+document.getElementById('prev').onclick=()=>goTo(cur-1);
+document.getElementById('speed').onclick=e=>{speedIdx=(speedIdx+1)%SPEEDS.length;e.target.textContent=SPEEDS[speedIdx]+'x';};
+addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();setPlaying(!playing);}
+  if(e.key==='ArrowRight')goTo(cur+1);if(e.key==='ArrowLeft')goTo(cur-1);});
+
+// manual orbit
+let dragging=false,px=0,py=0,moved=0;
+stage.addEventListener('pointerdown',e=>{dragging=true;moved=0;px=e.clientX;py=e.clientY;stage.classList.add('dragging');});
+addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;
+  moved+=Math.abs(dx)+Math.abs(dy);rig.theta-=dx*0.005;rig.phi=Math.min(2.6,Math.max(0.35,rig.phi-dy*0.004));flight=null;});
+addEventListener('pointerup',()=>{dragging=false;stage.classList.remove('dragging');});
+stage.addEventListener('wheel',e=>{e.preventDefault();rig.radius=Math.min(900,Math.max(12,rig.radius*(1+e.deltaY*0.001)));flight=null;},{passive:false});
+
+// hover + click picking
+const ray=new THREE.Raycaster();const mouse=new THREE.Vector2();const tip=document.getElementById('tip');
+let hovered=null;
+function pick(e){mouse.set((e.clientX/innerWidth)*2-1,-(e.clientY/innerHeight)*2+1);
+  ray.setFromCamera(mouse,camera);const hits=ray.intersectObjects(pickables,false);return hits[0]?hits[0].object:null;}
+stage.addEventListener('pointermove',e=>{if(dragging)return;const o=pick(e);hovered=o;
+  if(o&&o.userData.kind==='gene'){const u=o.userData,g=u.g;
+    tip.innerHTML='<b>'+g[0]+'</b><br><span class="c">'+(g[1]||'general')+' · used in '+g[3]+' builds · '+u.st+'</span><br><span class="c">home: '+u.home+'</span>';
+    tip.style.left=Math.min(innerWidth-260,e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';tip.style.opacity=1;}
+  else if(o&&o.userData.kind==='sun'){const u=o.userData;
+    tip.innerHTML='<b>'+u.name+'</b><br><span class="c">born '+u.d+' · '+u.pstat+'</span>';
+    tip.style.left=Math.min(innerWidth-260,e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';tip.style.opacity=1;}
+  else if(o&&o.userData.kind==='core'){tip.innerHTML='<b>the founding pool</b><br><span class="c">'+foundation.length+' genes feeding every birth</span>';
+    tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';tip.style.opacity=1;}
+  else tip.style.opacity=0;});
+stage.addEventListener('pointerup',e=>{if(moved>6)return;const o=pick(e);
+  if(o&&o.userData.kind==='sun'){setPlaying(false);goTo(2+o.userData.i);}
+  if(o&&o.userData.kind==='core'){setPlaying(false);goTo(1);}});
+
+// intro
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.getElementById('enter').onclick=()=>{document.getElementById('intro').classList.add('off');
+  goTo(0,true);showCard(stops[0]);if(!reduced){setPlaying(true);goTo(1);}};
+
+// ————— loop —————
+let last=performance.now();
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(0.05,(now-last)/1000);last=now;
+  const sp=SPEEDS[speedIdx];
+  coreGroup.rotation.y+=dt*0.03*sp;
+  orbiters.forEach(o=>{o.phase+=dt*o.speed*sp;const c=Math.cos(o.phase)*o.R,s2=Math.sin(o.phase)*o.R;
+    o.m.position.set(c,Math.sin(o.phase)*o.R*Math.sin(o.tilt),s2*Math.cos(o.tilt));});
+  if(flight){const t=Math.min(1,(now-flight.t0)/flight.dur),k=ease(t);
+    rig.target.lerpVectors(flight.from.target,flight.to.target,k);
+    rig.radius=flight.from.radius+(flight.to.radius-flight.from.radius)*k;
+    rig.theta=flight.from.theta+(flight.to.theta-flight.from.theta)*k;
+    if(t>=1)flight=null;}
+  else{if(!dragging&&!reduced)rig.theta+=dt*0.05*sp;
+    if(playing){holdT+=dt*sp;if(holdT>HOLD)goTo(cur+1);}}
+  applyRig();
+  // project labels
+  const v=new THREE.Vector3();
+  labels.forEach(L=>{v.copy(L.getPos());v.y+=6;v.project(camera);
+    const behind=v.z>1,x=(v.x*0.5+0.5)*innerWidth,y=(-v.y*0.5+0.5)*innerHeight;
+    L.el.style.opacity=behind?0:Math.max(0,1-Math.abs(v.z)*0.35);
+    L.el.style.left=x+'px';L.el.style.top=y+'px';});
+  renderer.render(scene,camera);}
+applyRig();requestAnimationFrame(frame);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+</script>
