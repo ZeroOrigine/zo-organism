@@ -18,6 +18,7 @@ export default async function Economy() {
     <EconomyPage
       gates={econ?.gates ?? null}
       targets={econ?.targets ?? null}
+      creditsLive={econ?.credits?.live ?? false}
       anchorSig={proof?.latest_anchored?.solana_sig ?? null}
       anchorDay={proof?.latest_anchored?.day ?? null}
     />

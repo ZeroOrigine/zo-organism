@@ -40,9 +40,9 @@ const ALLOC: Record<string, { t: string; p: string; d: string; r: string }> = {
     r: 'TRANSPARENCY LAW · every movement is a ledger row, every row hashes into the day’s root, every root lands on-chain. The reserve cannot move quietly.' },
 };
 
-export default function EconomyPage({ gates, targets, anchorSig, anchorDay }: {
+export default function EconomyPage({ gates, targets, anchorSig, anchorDay, creditsLive }: {
   gates: EconomyGates | null; targets: EconomyTargets | null;
-  anchorSig: string | null; anchorDay: string | null;
+  anchorSig: string | null; anchorDay: string | null; creditsLive?: boolean;
 }) {
   const [allocKey, setAllocKey] = useState('eco');
   const [openPhases, setOpenPhases] = useState<Record<string, boolean>>({});
@@ -80,15 +80,19 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay }: {
         ['Only hashes leave the building.', ' Never customer data.'],
       ],
       gateHead: 'GATE', gate: 'Founder approval. PASSED. First anchor finalized 2026-08-29, block 442678226.' },
-    { id: 'p1', state: 'armed', tag: 'PHASE 1', name: 'ZO Credits', status: 'ARMED · GATE SHUT', cls: 'armed',
-      short: 'One balance, bought with ordinary money or crypto, spendable across every product the machine has ever born. The first way the public puts value IN. Not a security anywhere on earth.',
+    // #299 C5: the card flips itself the moment the ledger holds a real
+    // purchase entry; before that it reads open-by-ruling.
+    { id: 'p1', state: creditsLive ? 'live' : 'armed', tag: 'PHASE 1', name: 'ZO Credits',
+      status: creditsLive ? 'LIVE · OPEN' : 'OPEN BY RULING · AWAITING FIRST PURCHASE',
+      cls: creditsLive ? 'live' : 'armed',
+      short: 'One balance, bought with ordinary money, spendable across every product the machine has ever born. The first way the public puts value IN. Not a security anywhere on earth. Open now at /credits.',
       mech: [
         ['Buy anytime, in fiat or crypto.', ' Credits are product prepayment under the gift-card model: clean accounting, no yield, no resale, no promises.'],
         ['One balance, every product.', ' Subscriptions, genome access, anything the fleet sells now or ever.'],
         ['The bridge clause.', ' Credits convert 1:1 into ZO on the day the token is born. Buying credits is how the public arrives early, without a token sale ever happening.'],
         ['Recorded forever.', ' Every credit purchase enters the anchored ledger. Remember that for Folio E·4.'],
       ],
-      gateHead: 'GATE', gate: `${t.phase1_paying_customers} paying customers across the fleet. The machine will not open the credit ledger one customer sooner.` },
+      gateHead: 'GATE', gate: 'Opened by founder ruling 2026-08-29 (recorded in the ledger). The paying-customers count stays on the Gate Watch as a vital. Buy credits at zeroorigine.com/credits.' },
     { id: 'p2', state: 'armed', tag: 'PHASE 2', name: 'The Birth of ZO', status: 'DESIGNED · UNBORN', cls: 'armed',
       short: 'An SPL token on Solana, born with a birth certificate anchored on-chain, the same ceremony as every product. Utility first, earned mostly, sold never. Full specification below in Folio E·3.',
       mech: [

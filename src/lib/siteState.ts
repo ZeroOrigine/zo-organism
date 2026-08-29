@@ -103,6 +103,7 @@ export async function getLawVerdicts(): Promise<LawVerdict[] | null> {
 export interface EconomyData {
   gates: { paying_customers: number; revenue_30d: number; revenue_alltime: number; signups_real: number; real_signal_products: number } | null;
   targets: { phase1_paying_customers: number; phase2_monthly_revenue_usd: number; phase2_months_required: number; phase2_active_users: number } | null;
+  credits?: { live: boolean; purchased_cents: number } | null;
 }
 
 export async function getEconomyData(): Promise<EconomyData | null> {
