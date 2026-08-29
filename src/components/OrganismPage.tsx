@@ -122,13 +122,15 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       if (hasHash || sameSite || born || recent) {
         setAlive(true);
         if (hasHash) {
-          // the deep link lands on its target, not on the ceremony
-          setTimeout(() => {
+          // the deep link lands on its target, not on the ceremony. Late
+          // layout (canvas sizing, restored scroll) can undo a single early
+          // scroll, so it retries until it sticks.
+          [60, 400, 1200].forEach((ms) => setTimeout(() => {
             try {
               const el = document.querySelector(window.location.hash);
-              if (el) el.scrollIntoView();
+              if (el && Math.abs(el.getBoundingClientRect().top) > 120) el.scrollIntoView();
             } catch { /* an unscrollable hash is harmless */ }
-          }, 60);
+          }, ms));
         }
         return;
       }
