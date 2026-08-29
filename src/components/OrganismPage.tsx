@@ -79,6 +79,21 @@ export function genePublicText(g: { d?: string; status: [string, string] }): str
 
 export default function OrganismPage({ state, proof }: { state: SiteState; proof: ProofSummary | null }) {
   const [alive, setAlive] = useState(false);
+  // #302 D3: the LIVE dot breathes ONLY while a birth is actually in flight
+  const [liveNow, setLiveNow] = useState(false);
+  useEffect(() => {
+    let stop = false;
+    const check = async () => {
+      try {
+        const r = await fetch('/api/live', { cache: 'no-store' });
+        const j = await r.json();
+        if (!stop) setLiveNow(!!j?.in_flight);
+      } catch { /* the dot stays off */ }
+    };
+    check();
+    const iv = setInterval(check, 60000);
+    return () => { stop = true; clearInterval(iv); };
+  }, []);
   const [reduced, setReduced] = useState(false);
   const [funding, setFunding] = useState<number | null>(null);
   const [fundErr, setFundErr] = useState('');
@@ -461,6 +476,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
           <a href="#hero">Organism</a><a href="#minds">Minds</a><a href="#births">Births</a>
           <a href="#graveyard">Graveyard</a><a href="#genome">Genome</a><a href="#books">Books</a>
           <a href="/law">Law</a><a href="/economy">Economy</a><a href="#support">Support</a>
+          <a href="/live">Live{liveNow && <span className="livedot" aria-label="a birth is in flight" />}</a>
         </span>
       </nav>
 
