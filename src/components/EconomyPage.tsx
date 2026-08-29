@@ -300,7 +300,9 @@ export default function EconomyPage({ gates, targets, anchorSig, anchorDay, cred
             the whitepaper: <Link href="/whitepaper" style={{ color: 'var(--life)' }}>read the whitepaper</Link>, rendered
             live from the machine&apos;s constitution store, with a downloadable PDF. The sovereignty curve has its own
             exam room: <Link href="/sovereignty" style={{ color: 'var(--life)' }}>the sovereignty scoreboard</Link>,
-            where the machine attempts full births on its own hardware, pass or fail, in public.</p>
+            where the machine attempts full births on its own hardware, pass or fail, in public. And the Minds
+            allocation now has living books: <Link href="/minds" style={{ color: 'var(--life)' }}>the mind economy</Link>,
+            where verified work earns ZO units against the anchored ledger, with no price, ever.</p>
         </div>
       </section>
 

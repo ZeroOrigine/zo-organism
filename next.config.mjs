@@ -27,7 +27,8 @@ const nextConfig = {
             { source: '/auth/:path*', destination: '/', permanent: false },
           ]
         : []),
-      { source: '/minds', destination: '/#minds', permanent: false },
+      // #307 E5: /minds is now a REAL page (the mind economy's public books);
+      // the old hash redirect is superseded.
       { source: '/constitution', destination: '/#constitution', permanent: false },
     ];
   },
