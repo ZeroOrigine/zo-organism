@@ -162,7 +162,9 @@ export default function CreditsAccount({ products }: { products: LiveProduct[] }
             <>
               <div className="proof-stamp" style={{ marginTop: 6 }}>
                 <div className="t">{st.email_masked} · balance</div>
-                <div className="root" style={{ fontSize: 26, color: 'var(--life)' }}>{usd(st.balance_cents)}</div>
+                <div className="root" style={{ fontSize: 26, color: 'var(--life)' }}>
+                  {usd(st.balance_cents)} <span style={{ fontSize: 15, color: 'var(--bone-dim)' }}>&middot; {(st.balance_cents / 100).toFixed(2)} ZO CREDITS at face</span>
+                </div>
                 <div>of a ${st.cap_cents / 100} account cap · credits are prepayment, convert 1:1 into ZO at token birth ·
                   no resale, no transfer, no yield</div>
               </div>

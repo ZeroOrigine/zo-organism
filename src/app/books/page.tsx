@@ -3,6 +3,7 @@
 // public supporter ledger, and the proof chain with its on-chain anchors.
 import Link from 'next/link';
 import { getBooksData } from '@/lib/siteState';
+import { Dual, CurrencyPicker } from '@/lib/currency';
 import '@/app/organism.css';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +27,7 @@ export default async function BooksPage() {
     <main style={{ opacity: 1 }}>
       <section className="registry-head">
         <div className="folio"><span className="no">BOOKS</span><h2>The full books</h2><span className="note">double-entry, kept in public</span></div>
+        <p className="caveat" style={{ marginTop: 10 }}><CurrencyPicker /></p>
 
         <h3 className="books-h">Monthly statement</h3>
         <div className="ledger"><table>
@@ -34,9 +36,9 @@ export default async function BooksPage() {
             {months.map((m) => (
               <tr key={m.month}>
                 <td className="mono">{m.month}</td>
-                <td className="num">${m.cost_usd.toFixed(2)}</td>
-                <td className="num">${m.revenue_usd.toFixed(2)}</td>
-                <td className="num">${m.donations_usd.toFixed(2)}</td>
+                <td className="num">${m.cost_usd.toFixed(2)}<Dual usd={m.cost_usd} /></td>
+                <td className="num">${m.revenue_usd.toFixed(2)}<Dual usd={m.revenue_usd} /></td>
+                <td className="num">${m.donations_usd.toFixed(2)}<Dual usd={m.donations_usd} /></td>
               </tr>
             ))}
           </tbody>
@@ -49,12 +51,12 @@ export default async function BooksPage() {
             <h3 className="books-h">Revenue reconciliation</h3>
             <div className="ledger"><table>
               <tbody>
-                <tr><td>Gross payment events, all time</td><td className="num">{usd(rc.gross_cents)}</td></tr>
+                <tr><td>Gross payment events, all time</td><td className="num">{usd(rc.gross_cents)}<Dual usd={rc.gross_cents / 100} /></td></tr>
                 <tr><td>less founder drills and self-tests</td><td className="num">-{usd(rc.test_drill_cents)}</td></tr>
                 <tr><td>less refunds</td><td className="num">-{usd(rc.refund_cents)}</td></tr>
                 <tr><td>less supporter contributions (they live in the supporter ledger below, not in revenue)</td><td className="num">-{usd(rc.support_reclass_cents)}</td></tr>
                 <tr><td>less credit purchases held as deferred revenue (gift-card model; recognized only when spent)</td><td className="num">-{usd(rc.credits_reclass_cents)}</td></tr>
-                <tr><td><b>Recognized revenue (the number the home page shows)</b></td><td className="num"><b>{usd(rc.recognized_cents)}</b></td></tr>
+                <tr><td><b>Recognized revenue (the number the home page shows)</b></td><td className="num"><b>{usd(rc.recognized_cents)}</b><Dual usd={rc.recognized_cents / 100} /></td></tr>
               </tbody>
             </table></div>
             <p className="caveat">Corrections are made by reversal entries that reference the original, never by deletion;
@@ -63,10 +65,10 @@ export default async function BooksPage() {
             <h3 className="books-h">Credits outstanding (what the machine owes)</h3>
             <div className="ledger"><table>
               <tbody>
-                <tr><td>ZO Credits purchased</td><td className="num">{usd(rc.credits.purchased_cents)}</td></tr>
+                <tr><td>ZO Credits purchased</td><td className="num">{usd(rc.credits.purchased_cents)} &middot; {(rc.credits.purchased_cents / 100).toFixed(2)} ZO CREDITS</td></tr>
                 <tr><td>less spent on products (recognized as revenue at spend)</td><td className="num">-{usd(rc.credits.spent_cents)}</td></tr>
                 <tr><td>less refunded</td><td className="num">-{usd(rc.credits.refunded_cents)}</td></tr>
-                <tr><td><b>Outstanding liability</b></td><td className="num"><b>{usd(rc.credits.outstanding_cents)}</b></td></tr>
+                <tr><td><b>Outstanding liability</b></td><td className="num"><b>{usd(rc.credits.outstanding_cents)} &middot; {(rc.credits.outstanding_cents / 100).toFixed(2)} ZO CREDITS</b><Dual usd={rc.credits.outstanding_cents / 100} /></td></tr>
               </tbody>
             </table></div>
             <p className="caveat">Credits are prepayment the machine still owes in product value. They are not revenue and

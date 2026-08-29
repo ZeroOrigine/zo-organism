@@ -10,6 +10,7 @@
 // reduced-motion skips it entirely.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Dual } from '@/lib/currency';
 import Link from 'next/link';
 import type { ProofSummary, SiteState } from '@/lib/siteState';
 
@@ -499,7 +500,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
                   {(v.prefix || '') + (Number.isInteger(v.v) ? v.v.toLocaleString()
                     : v.v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}
                 </div>
-                <div className="s">{v.s}</div>
+                <div className="s">{v.s}{v.prefix === '$' && <Dual usd={v.v} />}</div>
               </div>
             ))}
           </div>

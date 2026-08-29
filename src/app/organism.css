@@ -206,3 +206,9 @@
   .live-line{font-family:var(--mono);font-size:13.5px;line-height:1.9;color:var(--bone-dim)}
   .live-line .t{color:var(--bone-faint);margin-right:10px}
   .live-line .s{color:var(--gold);margin-right:6px}
+
+  /* #303: display-currency companions (the books stay USD) */
+  .fx-dual{font-family:var(--mono);font-size:13px;color:var(--bone-faint);white-space:nowrap}
+  .fx-picker{font-family:var(--mono);font-size:13px;color:var(--bone-faint)}
+  .fx-picker select{background:var(--void-2);color:var(--bone);border:1px solid var(--rule-strong);font-family:var(--mono);font-size:13px;padding:3px 8px;border-radius:2px}
+  .fx-note{color:var(--bone-faint)}
