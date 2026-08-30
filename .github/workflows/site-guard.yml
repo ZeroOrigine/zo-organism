@@ -28,3 +28,11 @@ jobs:
       - name: THE NAV LAW — one header, mounted once, no page-local forks (#4505)
         run: node scripts/check-nav.mjs
       - run: npm run build
+        env:
+          # the crawl asserts the public site's redirects, so the build must
+          # carry the public-site config the way the real deploy does
+          ZO_PUBLIC_SITE: 'true'
+      - name: THE ROUTE CRAWL — every nav route, the plural redirect, the branded 404 (#309 A4)
+        run: node scripts/site-crawl.mjs
+        env:
+          ZO_PUBLIC_SITE: 'true'
