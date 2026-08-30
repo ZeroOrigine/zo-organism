@@ -32,6 +32,13 @@ interface LivePayload {
   elapsed_min?: number | null;
   replay?: { name: string; born: string; cost_usd: number; stages: Stage[]; feed: FeedLine[]; ethics: Ethics | null } | null;
   between?: string; note?: string;
+  promises?: { advertised: number; deliverable: number; unmatched: number } | null;
+  // REC #312 (6): an instrument that has never failed is either perfect or not
+  // connected, and the machine should say which it believes
+  instruments?: {
+    instruments: number; have_reported: number; never_reported: number;
+    silent_but_running: number; silent_and_stale: number;
+  } | null;
 }
 
 const STAGE_KEYS = ['research', 'ethics', 'adversary', 'approved', 'build', 'qa', 'marketing', 'drill', 'launched'];
@@ -335,6 +342,27 @@ export default function LiveRoom() {
           </div>
         )}
       </div>
+
+      {/* REC #312 (6): the machine publishes how much of its own instrumentation
+          has never once spoken. An instrument that has never failed is either
+          perfect or not connected, and refusing to print the number is how a
+          machine ends up trusting its own silence. */}
+      {d?.instruments && (
+        <section className="eco-section"><div className="eco-wrap">
+          <h2 className="books-h">What the instruments have said</h2>
+          <p className="caveat">
+            The machine runs <b>{d.instruments.instruments}</b> health gates over itself.
+            <b> {d.instruments.have_reported}</b> of them have ever filed a finding.
+            The other <b>{d.instruments.never_reported}</b> have never once reported a
+            failure: <b>{d.instruments.silent_but_running}</b> ran in the last two days and
+            said nothing, which means they are either perfect or blind and there is no way
+            to tell from here, and <b>{d.instruments.silent_and_stale}</b> have not run
+            lately at all, which means they are not connected whatever they would have said.
+            This number is published because an instrument that never fails is the easiest
+            thing in the world to mistake for good news.
+          </p>
+        </div></section>
+      )}
 
       <section className="eco-section"><div className="eco-wrap">
         <p className="caveat">Every line above is whitelist-mapped from the machine&apos;s own event ledger: short honest
