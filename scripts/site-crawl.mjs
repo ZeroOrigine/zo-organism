@@ -87,3 +87,6 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(`\nsite crawl: ${links.length} nav routes + redirect + 404 + responsive CSS all green`);
+// npx's child server can outlive the SIGTERM in CI and hold the step open
+// forever; the verdict is printed, so end the process unconditionally.
+process.exit(0);
