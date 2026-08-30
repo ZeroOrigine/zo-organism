@@ -15,6 +15,7 @@ const ROUTES: Record<string, string> = {
   wallet_bind: '/passport/wallet/bind',
   revoke: '/passport/revoke',
   export: '/passport/export',
+  github: '/passport/github',
 };
 
 export async function POST(req: Request) {

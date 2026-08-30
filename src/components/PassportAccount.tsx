@@ -68,10 +68,48 @@ export default function PassportAccount() {
         setPhase('login');
         return;
       }
+      if (new URLSearchParams(window.location.search).get('github') === '1') {
+        setPhase('boot');
+        try {
+          const { createClient } = await import('@supabase/supabase-js');
+          const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+                                  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+          const { data } = await sb.auth.getSession();
+          const at = data?.session?.access_token;
+          if (at) {
+            const d = await api('github', { access_token: at });
+            setMsg(d?.ok
+              ? `GitHub verified as ${d.github}.` + (d.library?.granted
+                  ? ' Library access is now granted to that account.'
+                  : ' No library entitlement on this address yet.')
+              : d?.reason || 'that GitHub session could not be verified');
+          }
+        } catch { setMsg('the GitHub session could not be read'); }
+        history.replaceState(null, '', window.location.pathname);
+      }
       const s = loadSession();
       if (s) { setPhase('boot'); setSession(s); await refresh(s); }
+      else setPhase('login');
     })();
   }, [refresh]);
+
+  // REC #310 Phase A, the fourth door. The browser never tells the machine who
+  // it is: it hands over the Supabase session and the machine asks Supabase.
+  const signInWithGithub = async () => {
+    setMsg('');
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+                              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'github',
+        options: { redirectTo: `${window.location.origin}/account?github=1` },
+      });
+      if (error) setMsg('GitHub sign-in could not start; the email link still works.');
+    } catch {
+      setMsg('GitHub sign-in could not start; the email link still works.');
+    }
+  };
 
   const sendLink = async () => {
     setBusy(true); setMsg('');
@@ -129,6 +167,8 @@ export default function PassportAccount() {
                     value={email} onChange={(e) => setEmail(e.target.value)} style={{ minWidth: 320 }} />
                   <button className="viewall" style={{ marginTop: 0, cursor: 'pointer', background: 'none' }}
                     onClick={sendLink} disabled={busy} type="button">{busy ? 'sending' : 'Email me a link'}</button>
+                  <button className="viewall" style={{ marginTop: 0, cursor: 'pointer', background: 'none' }}
+                    onClick={signInWithGithub} type="button">Continue with GitHub</button>
                 </div>
               ) : (
                 <div className="gatebox" style={{ marginTop: 22 }}>
