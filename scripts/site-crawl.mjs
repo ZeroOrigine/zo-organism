@@ -78,6 +78,25 @@ try {
       throw new Error('the under-768px nav wrap block is missing from built CSS');
     }
   });
+
+  await check('native controls themed at the element level (#4539)', async () => {
+    // the construction guarantee: bare input/select/textarea carry the dark
+    // theme in the built CSS, so a page that forgets a class cannot render
+    // a white box on the void (the /support-crypto white-on-white class)
+    const cssDir = path.join('.next', 'static', 'css');
+    const css = readdirSync(cssDir).map((f) => readFileSync(path.join(cssDir, f), 'utf8')).join('\n');
+    if (!/(^|})\s*input,\s*select,\s*textarea\s*\{[^}]*background:/m.test(css.replace(/\n/g, ''))) {
+      throw new Error('the bare-element input theming rule is missing from built CSS');
+    }
+    // and no page ships an inline white background on a native control
+    for (const href of links.concat(['/support-crypto', '/credits', '/credits/account'])) {
+      const r = await fetch(BASE + href);
+      if (r.status !== 200) continue;
+      const body = await r.text();
+      const bad = body.match(/<(input|select|textarea)[^>]*style="[^"]*background(?:-color)?:\s*(?:#fff|#ffffff|white)[^"]*"/i);
+      if (bad) throw new Error(`${href} ships an inline white control: ${bad[0].slice(0, 90)}`);
+    }
+  });
 } finally {
   server.kill('SIGTERM');
 }

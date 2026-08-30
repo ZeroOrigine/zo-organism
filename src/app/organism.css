@@ -131,8 +131,18 @@
 
   /* #255 W2: scale rails */
   .rail{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-  .rail input[type=search]{background:var(--void-2);border:1px solid var(--rule-strong);color:var(--bone);font-family:var(--mono);font-size:13.5px;padding:8px 12px;border-radius:2px;min-width:220px}
-  .rail input[type=search]:focus{outline:2px solid var(--life);outline-offset:2px}
+  /* #4539: EVERY native control is themed at the ELEMENT level. The old rule
+     covered only .rail input[type=search], so a text input on /support-crypto
+     rendered as a white box with near-invisible text on the void — the same
+     class as the #4518 credits input. A page that forgets a class can no
+     longer produce white-on-white; components refine, nothing remembers. */
+  input,select,textarea{background:var(--void-2);border:1px solid var(--rule-strong);color:var(--bone);
+    font-family:var(--mono);font-size:14px;padding:9px 13px;border-radius:2px;accent-color:var(--life)}
+  input::placeholder,textarea::placeholder{color:var(--bone-dim);opacity:.8}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--life);outline-offset:2px}
+  input[type=checkbox],input[type=radio]{width:auto;padding:0;border:none;background:none}
+  select option{background:var(--void-2);color:var(--bone)}
+  .rail input[type=search]{font-size:13.5px;padding:8px 12px;min-width:220px}
   .pager{display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:13px;color:var(--bone-dim);margin-top:14px}
   .pager button{font-family:var(--mono);font-size:13px;background:none;border:1px solid var(--rule-strong);color:var(--bone-dim);padding:5px 12px;cursor:pointer;border-radius:2px}
   .pager button:disabled{opacity:.35;cursor:default}
