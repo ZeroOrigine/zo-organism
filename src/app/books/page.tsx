@@ -75,6 +75,7 @@ export default async function BooksPage() {
 
   // ── the position: four numbers that say where the machine stands ──
   const invested = months.reduce((s, m) => s + Number(m.cost_usd || 0), 0);
+  const netCents = (rc ? rc.recognized_cents : 0) - Math.round(invested * 100);
   const anchoredDays = data.proofs.filter((p) => p.solana_explorer).length;
 
   // ── one ledger out of four tables ──
@@ -143,6 +144,17 @@ export default async function BooksPage() {
             <span className="bk-pos-value">${invested.toFixed(2)}</span>
             <span className="bk-pos-note">model and infrastructure</span>
           </div>
+          {/* The band showed what came in and what went out and never
+              subtracted them. Every reader does that arithmetic anyway, and a
+              books page that makes them do it privately looks like it is
+              hoping they will not. */}
+          <div className="bk-pos-cell bk-net">
+            <span className="bk-pos-label">Net position</span>
+            <span className={'bk-pos-value' + (netCents < 0 ? ' bk-negative' : '')}>
+              {usd(netCents)}
+            </span>
+            <span className="bk-pos-note">recognized revenue less what it cost to get here</span>
+          </div>
           <div className="bk-pos-cell">
             <span className="bk-pos-label">Credits outstanding</span>
             <span className={'bk-pos-value' + (rc && rc.credits.outstanding_cents > 0 ? ' bk-owed' : '')}>
@@ -170,12 +182,17 @@ export default async function BooksPage() {
                 <div className="bk-fall-amt">{usd(rc.gross_cents)}</div>
               </div>
               {deductions.map(([label, cents]) => (
-                <div className="bk-fall-row" key={label}>
+                // a zero deduction used to draw a full-width empty track,
+                // which reads as a rendering fault rather than as the number
+                // zero. It states itself in words and draws nothing.
+                <div className={'bk-fall-row' + (cents ? '' : ' bk-zero')} key={label}>
                   <div>
                     <div className="bk-fall-label">less {label}</div>
-                    <div className="bk-bar">
-                      <span className="bk-less" style={{ right: 0, width: `${pct(cents)}%` }} />
-                    </div>
+                    {cents
+                      ? <div className="bk-bar">
+                          <span className="bk-less" style={{ right: 0, width: `${pct(cents)}%` }} />
+                        </div>
+                      : <div className="bk-none">none to deduct</div>}
                   </div>
                   <div className="bk-fall-amt">-{usd(cents)}</div>
                 </div>
@@ -196,24 +213,37 @@ export default async function BooksPage() {
                 <div className="bk-fall-amt">{usd(rc.recognized_cents)}<Dual usd={rc.recognized_cents / 100} /></div>
               </div>
             </div>
-            <p className="caveat">Corrections are made by reversal entries that reference the original, never by deletion;
-              every line above is a row in zo_revenue_events or zo_credits_entries. Subtract the deductions from the gross
-              and you get the recognized figure exactly: the books publish what is left over, so a deduction nobody named
-              would appear above as an unexplained difference rather than as a hole for the reader to find.
-              Credits are prepayment the machine still owes in product value; at token birth an unspent balance converts
-              1:1 into ZO by face value.</p>
+            {/* This paragraph carries the page's central promise, and it was
+                set in 13px faint monospace: the format people skip. */}
+            <p className="bk-prose">
+              <b>Corrections are made by reversal entries that reference the original, never by deletion.</b> Every line
+              above is a row in zo_revenue_events or zo_credits_entries. Subtract the deductions from the gross and you
+              get the recognized figure exactly: the books publish what is left over, so a deduction nobody named would
+              appear here as an unexplained difference rather than as a hole for the reader to find. Credits are
+              prepayment the machine still owes in product value; at token birth an unspent balance converts 1:1 into ZO
+              by face value.
+            </p>
           </>
         )}
 
         <h2 className="books-h">The ledger</h2>
+        {/* The scope of the proof chain was set BELOW the table it qualifies,
+            in the format readers skip, so a row without a proof button looked
+            broken rather than declared. It is stated first now, and in a size
+            that expects to be read. */}
+        <p className="bk-prose">
+          One ledger, filtered: revenue recognition, supporter contributions, credit movements and the cost of every
+          birth, newest first. <b>Not every line is provable in the same way, and the page says which is which.</b>{' '}
+          Supporter rows carry a proof button that returns the exact bytes the machine hashed. A birth&apos;s cost is a
+          sum over rows that are each anchored individually, so the total has no single proof of its own. And revenue
+          recognition lines are <b>not yet leaves in the chain at all</b>: it carries the cost, donation, credits,
+          product, finding, verdict, rate and wage tables, and recognition joins it the day that change ships. Saying so
+          is cheaper than implying a proof that does not exist.
+        </p>
         <BooksLedger rows={ledger} />
-        <p className="caveat">One ledger, filtered: revenue recognition, supporter contributions, credit movements and the
-          cost of every birth, newest first. Names appear exactly as supporters gave them and no other personal data is
-          published. Crypto support arrives at the machine&apos;s receive-only Solana wallet
-          BQeNktmf4DAeetsxwCjVZwAzsAwCwkbvL1kSf9nUGXqQ and enters this same ledger.
-          <b> Revenue recognition lines are not themselves leaves in the proof chain yet</b>: the chain carries the cost,
-          donation, credits, product, finding, verdict, rate and wage tables, and recognition joins it from the day that
-          change ships. Saying so is cheaper than implying a proof that does not exist.</p>
+        <p className="caveat">Names appear exactly as supporters gave them and no other personal data is published.
+          Crypto support arrives at the machine&apos;s receive-only Solana wallet
+          BQeNktmf4DAeetsxwCjVZwAzsAwCwkbvL1kSf9nUGXqQ and enters this same ledger.</p>
 
         <h2 className="books-h">Monthly statement</h2>
         <div className="ledger bk-months"><table>

@@ -75,7 +75,7 @@
   color: var(--void); background: var(--life); border-color: var(--life);
 }
 .bk-chip-n { opacity: .65; margin-left: 6px; }
-.bk-scroll { max-height: 440px; overflow-y: auto; border: 1px solid var(--rule); }
+.bk-scroll { max-height: 390px; overflow-y: auto; border: 1px solid var(--rule); }
 .bk-scroll table { width: 100%; border-collapse: collapse; }
 .bk-scroll thead th {
   position: sticky; top: 0; z-index: 1; background: var(--void-2);
@@ -98,7 +98,7 @@
 .bk-neg { color: var(--gold); }
 
 /* ── the proof chain, as a spine ── */
-.bk-spine { margin: 12px 0 4px; max-height: 340px; overflow-y: auto; padding-left: 4px; }
+.bk-spine { margin: 12px 0 4px; max-height: 260px; overflow-y: auto; padding-left: 4px; }
 .bk-day { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; }
 .bk-rail { position: relative; }
 .bk-rail::before {
@@ -134,3 +134,37 @@
 /* REC #312 clause 2: a check that could not run must not look like a check
    that ran and found nothing. Broken reads red, not grey. */
 .bk-broken { color: var(--blood); }
+
+/* ── the net position: the subtraction every reader does anyway ── */
+.bk-pos-cell.bk-net { background: var(--void-3); }
+.bk-pos-value.bk-negative { color: var(--gold); }
+
+/* ── a zero deduction is not a bar with nothing in it ──
+   -$0.00 drew a full-width empty track, which reads as a rendering fault
+   rather than as the number zero. A zero row states itself and draws
+   nothing. */
+.bk-fall-row.bk-zero .bk-fall-label,
+.bk-fall-row.bk-zero .bk-fall-amt { color: var(--bone-faint); }
+.bk-fall-row.bk-zero .bk-none {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--bone-faint); margin-top: 5px;
+}
+
+/* ── an absence you NAME is honest; a blank cell is not ── */
+.bk-chip-absent {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--bone-faint);
+  border: 1px dashed var(--rule-strong); padding: 2px 7px; border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* ── the page's most trust-building sentences, in a format people read ──
+   the reversal-not-deletion rule and the scope of the proof chain were set
+   in 13px faint monospace, which is the format readers skip. They carry the
+   argument; they get reading weight. */
+.bk-prose {
+  font-family: var(--sans); font-size: 16px; line-height: 1.75;
+  color: var(--bone-dim); max-width: 74ch; margin: 14px 0 4px;
+}
+.bk-prose b, .bk-prose strong { color: var(--bone); font-weight: 600; }
+.bk-prose + .bk-prose { margin-top: 10px; }

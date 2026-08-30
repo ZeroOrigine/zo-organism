@@ -87,6 +87,11 @@ export default function BooksLedger({ rows }: { rows: LedgerRow[] }) {
                 </td>
                 <td className={'bk-num' + (r.negative ? ' bk-neg' : '')}>{r.amount}</td>
                 <td>
+                  {/* An absence you NAME is honest; a blank cell is not. A dash
+                      here read as broken, when the truth is specific and
+                      different per row: a recognition line is not a leaf in the
+                      chain yet, and a birth's cost is a SUM over cost rows that
+                      are each already anchored. */}
                   {r.proof
                     ? <ProofCell entryId={r.proof.entryId} table={r.proof.table} compact />
                     : r.proofState === 'ambiguous'
@@ -100,7 +105,15 @@ export default function BooksLedger({ rows }: { rows: LedgerRow[] }) {
                             className="bk-mono bk-broken"
                             title="the proof index could not be reached, so this page cannot say which entry this row is; the proof itself is unaffected and /books/proof still answers"
                           >index unreachable</span>
-                        : <span className="bk-mono" style={{ color: 'var(--bone-faint)' }}>&mdash;</span>}
+                        : r.kind === 'births'
+                          ? <span
+                              className="bk-chip-absent"
+                              title="this line is the SUM of that birth's cost rows. Each of those rows is a leaf in the chain and provable on its own; the total is not itself an entry, so it has no single proof."
+                            >sum of anchored rows</span>
+                          : <span
+                              className="bk-chip-absent"
+                              title="revenue recognition lines are not yet leaves in the proof chain. The chain carries the cost, donation, credits, product, finding, verdict, rate and wage tables; recognition joins it from the day that change ships."
+                            >not yet anchored</span>}
                 </td>
               </tr>
             ))}
