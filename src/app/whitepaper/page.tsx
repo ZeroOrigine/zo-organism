@@ -3,7 +3,8 @@
 // organism design system. The DOWNLOAD PDF button serves the PDF regenerated
 // from the same source bytes (public/zeroorigine-whitepaper.pdf).
 import WhitepaperPage from '@/components/WhitepaperPage';
-import { getWhitepaper } from '@/lib/siteState';
+import { getWhitepaper, getSiteState, getProofSummary } from '@/lib/siteState';
+import { whitepaperTokenValues, substituteLiveTokens } from '@/lib/liveTokens';
 import '@/app/organism.css';
 import '@/app/economy.css';
 
@@ -15,6 +16,12 @@ export const metadata = {
 };
 
 export default async function Whitepaper() {
-  const doc = await getWhitepaper();
-  return <WhitepaperPage doc={doc} />;
+  // #4513: the vitals inside the document are {{live:*}} tokens resolved
+  // from the same payloads the rest of the site renders — read at request
+  // time, so the paper can never disagree with the books.
+  const [doc, state, proof] = await Promise.all([getWhitepaper(), getSiteState(), getProofSummary()]);
+  const resolved = doc
+    ? { ...doc, markdown: substituteLiveTokens(doc.markdown, whitepaperTokenValues(state, proof)) }
+    : doc;
+  return <WhitepaperPage doc={resolved} />;
 }
