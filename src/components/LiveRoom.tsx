@@ -105,9 +105,16 @@ export default function LiveRoom() {
     if (!d || d.mode !== 'live') return;
     const lines = realLines(d.feed || []);
     setShownFeed(lines.slice(-3));
-    const idx = stageIndexOf(d.feed || []);
+    // the SERVER's stage rail is the authority: a birth's own event history
+    // can be nearly empty mid-build (whitelisted events land at stage ends),
+    // and recomputing from the feed here once told a streaming build it was
+    // 'researching'. Fall back to the feed only when the rail is absent.
+    const railActive = (d.stages || []).findIndex((s) => s.status === 'active');
+    const railDone = (d.stages || []).reduce((m, s, i) => (s.status === 'done' ? i : m), -1);
+    const idx = railActive >= 0 ? railActive : railDone >= 0 ? railDone : stageIndexOf(d.feed || []);
     setStageIdx(idx);
-    const isResearch = d.kind === 'research' || idx <= 0 || (d.project?.status || '') === 'researching';
+    const isResearch = d.kind ? d.kind === 'research'
+      : (idx <= 0 || (d.project?.status || '') === 'researching');
     anim.current.rate = isResearch ? 0.55 : 0.55 + Math.max(0, idx) * 0.09;
     if (lines.length > prevCount.current) { anim.current.pulse = 1; }
     prevCount.current = lines.length;
@@ -253,7 +260,7 @@ export default function LiveRoom() {
         <div className="cn-center">
           <div className="cn-eyebrow">
             {failed ? 'delivery room · a birth failed, honestly'
-              : isLive ? (stageIdx <= 0 ? 'delivery room · the minds are researching' : 'delivery room · a birth is in flight')
+              : isLive ? ((d?.kind === 'research' || (!d?.kind && stageIdx <= 0)) ? 'delivery room · the minds are researching' : 'delivery room · a birth is in flight')
               : 'delivery room · replay'}
           </div>
           <h1 className="cn-title">{title || (d ? '' : 'opening the room')}<span className="cursor" /></h1>
