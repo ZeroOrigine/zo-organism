@@ -34,6 +34,27 @@ export default async function SovereigntyPage() {
             front-door drill. Zero special treatment, zero cloud rescue: a failed stage ends the run and the row
             stands here anyway. Model cost of an exam run: nothing but electricity.</p>
 
+          {/* The first exam ended with the build leg dead, and the tempting
+              sentence was "open models cannot build products". It is not the
+              true one. Measuring it changed the claim, so the page states the
+              measurement instead of the impression. */}
+          <div className="gatebox" style={{ marginTop: 24 }}>
+            <p className="eco-label gold">WHAT ACTUALLY STOPPED THE FIRST RUN: THE CONTEXT WINDOW</p>
+            <p>The build leg died and the easy conclusion was that open models cannot write software. That is not
+              what happened, and the arithmetic is not close. The coding model holds <b>32,768 tokens</b> in total.
+              The builder&apos;s own prompt measured <b>23,555 to 28,574</b> of them, which leaves roughly{' '}
+              <b>4,200 tokens to answer in</b>. Across twelve real cloud births the components it was being asked
+              for average 35,971 tokens (core), 23,171 (API) and 20,430 (auth and payments). The smallest component
+              of all, the database schema, averages 8,248. <b>Not one of them fits.</b></p>
+            <p>So the honest sentence is not &ldquo;open models failed&rdquo;. It is that we asked a 32k-context
+              model to hold a 28.5k prompt and emit a 36k artifact, and it did the only thing it could. Research,
+              ethics, the adversary and the architecture all ran to completion on this hardware for nothing but
+              electricity: four of the five mind types and 18 of 25 calls. Only the leg whose output does not fit
+              in the window failed, and the fix is to split the components until they do, not to rent a bigger
+              mind. Until that is proven, this page is evidence about a context window and must not be read as
+              evidence about capability.</p>
+          </div>
+
           <div className="gatebox" style={{ marginTop: 24 }}>
             <p className="eco-label gold">THE RULES</p>
             <p>Same prompts, same gates, same verdict engine, same live drill. Every call is served by the node&apos;s
