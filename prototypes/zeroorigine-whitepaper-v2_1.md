@@ -156,17 +156,21 @@ revenue → funds births → births feed the genome → genes make the next birt
 
 ## 7. The Growth Law Toward the Infinite
 
-"Infinite growth" is usually a slogan. Here it is an architecture with three compounding curves:
+"Infinite growth" is usually a slogan. Here it is an architecture: four compounding curves, one unforgeable input, and a payroll designed for two kinds of worker.
 
 **Curve 1: The genome compounds.** Every birth is cheaper and stronger than the last because it inherits every previous lesson. Average birth cost is already ~$134; the genome's whole purpose is to bend that curve down while quality rises. Reproduction cost falling toward zero is the closest thing economics has to biological growth.
 
-**Curve 2: Sovereignty rises, and it has its first evidence.** A six-rung ladder moves the machine onto owned infrastructure: an owned compute node, then low-stakes judgment, then sovereign memory (a self-hosted replica of the books, made safe by the anchor chain), then sovereign hosting, then a parallel money rail, and last, when open models pass the machine's own full-birth exam, the frontier minds themselves. This is no longer only a plan: on 2026-08-29 the machine's research minds completed their first pipeline calls on founder-owned hardware, 26,000 tokens at $0.000000, under unchanged gates, recorded in the same anchored books as every paid call. The proof layer makes every migration safe, because even a moved database can prove its history was never rewritten.
+**Curve 2: Sovereignty rises, and it has its first evidence.** A six-rung ladder moves the machine onto owned infrastructure: an owned compute node, then low-stakes judgment, then sovereign memory, then sovereign hosting, then a parallel money rail, and last, when open models pass the machine's own full-birth exam, the frontier minds themselves. This is no longer only a plan: on 2026-08-29 the machine's research minds completed their first pipeline calls on founder-owned hardware, 26,000 tokens at $0.000000, under unchanged gates, recorded in the same anchored books as every paid call. The proof layer makes every migration safe, because even a moved database can prove its history was never rewritten.
 
-**Curve 3: The organism does not sleep, does not forget, and does not lose.** Reminder dispatches run while no one is awake. Every failure becomes a gene. Every day becomes an anchored root. Institutions decay by forgetting; this one is structurally incapable of it.
+**Curve 3: The organism does not sleep, does not forget, and does not lose.** Reminder dispatches run while no one is awake. Every failure becomes a gene. Every day becomes an anchored root. Institutions decay by forgetting; this one is structurally incapable of it. Its immune system works the night shift at zero marginal cost, and every organ it grows is permanent: a gate costs once and guards forever.
+
+**Curve 4: The economy internalizes.** Every product the machine births is new surface where its own unit has utility; one credit balance spends across the entire fleet; the minds are paid in the unit they help create. At maturity the loop closes: the machine earns, pays its workers, and buys its own compute inside one set of anchored books. An economy is built for an infinite period not when it grows fast, but when its loop has no leak it cannot see.
+
+**The unforgeable input: time.** Sixteen anchored days exist today. The ten-thousandth day will cost the same cent to anchor and be worth incomparably more, because anchored history is the one asset that cannot be bought, rushed, backfilled, or faked. Any imitator must live the same days in public. The moat compounds by the machine simply continuing to exist, honestly, in the open.
 
 **The employment horizon.** The plans in this document are not quarterly plans; the design assumes an unbounded period of evolution, and its milestones are gates, not dates. On that horizon the institution is an employer twice over. It already employs its minds: machine labor earns recorded wages against anchored work events, on public per-mind books, before any token exists. And the same architecture is built to employ humans wherever the ecosystem meets its physical constraints: hands for hardware, presence for jurisdictions, signatures the law reserves for persons, judgment the constitution reserves for people. A human hired by the machine would be paid from the same books, each wage an anchored row beside the minds' own. No dates are promised for any of this; the horizon is stated so the architecture can be judged against it, and so no one mistakes a small present for a small intention.
 
-Three compounding curves, one constitution, zero employees today and a payroll designed for two kinds of worker. Growth over an infinite period does not require any single product to win. It requires the reproduction loop to stay profitable and honest. That is the entire long game.
+Four compounding curves, one constitution, one unforgeable input, zero employees today and a payroll designed for two kinds of worker. Growth over an infinite period does not require any single product to win. It requires the reproduction loop to stay profitable and honest. That is the entire long game.
 
 ---
 
@@ -196,16 +200,8 @@ This turns the waiting period, the thing most projects hide, into the record its
 
 ---
 
-## 10. Risks, Stated in the Open
 
-- **Revenue is $107.90, all-time, recognized.** The flywheel is proven mechanically, not yet economically. The gates exist precisely because of this.
-- **Regulatory reality.** Canada's securities regulators treat "invest and grow with us" tokens as investment contracts. This design avoids sale, yield, and profit language entirely and still will not birth the token without written legal opinion. No exceptions.
-- **Model dependency.** The minds run primarily on rented frontier intelligence. The sovereignty ladder addresses this honestly over years, not in a paragraph; its first owned-hardware calls are now in the books.
-- **The proof layer proves integrity, not truth of first entry.** Anchoring proves the books were never rewritten; the honesty of the original entries rests on the constitution and its published-verdict culture. The two together, integrity plus culture, are the claim.
-
----
-
-## 11. Technical Specification: Proof-of-Books
+## 10. Technical Specification: Proof-of-Books
 
 This section is the open standard. Any organization may implement it; ZeroOrigine is the reference implementation.
 
@@ -233,7 +229,7 @@ The chained root is written to Solana mainnet as a Memo-program transaction from
 ### 11.5 What the standard does and does not prove
 It proves the books were never rewritten after the day they were written. It does not prove the honesty of first entry; that rests on the constitution, the published-verdict culture, and the fact that fabrications eventually collide with anchored reality. Integrity is mathematics; honesty is governance; the design needs both and says so.
 
-## 12. Emission Mechanics in Detail
+## 11. Emission Mechanics in Detail
 
 The Ecosystem Treasury (40%) releases against **work events**, each one an anchored ledger row:
 
@@ -245,7 +241,7 @@ The Ecosystem Treasury (40%) releases against **work events**, each one an ancho
 
 Release bands are set at birth in a published emission schedule and can only tighten, never loosen (a constitutional ratchet). Two consequences: supply expansion is bounded by real output, and anyone can audit emission against the same anchored events the books already publish. If the machine stops working, emission stops, visibly. There is no discretionary faucet.
 
-## 13. ZO Credits Mechanics
+## 12. ZO Credits Mechanics
 
 - Purchased at face value in fiat (crypto rail follows). Accounted as deferred revenue, gift-card model; outstanding balances are a published liability line on /books.
 - Spendable immediately against any fleet product subscription. Spending burns the credit and recognizes revenue normally, ledger-first.
@@ -253,14 +249,14 @@ Release bands are set at birth in a published emission schedule and can only tig
 - No resale, no transfer between accounts, no yield. Refunds: unspent balances, within 30 days, original payment method only. Every purchase, spend, refund, and conversion is a ledger row in the daily proof tree.
 - A holder may bind a wallet by signed message as their conversion address; each bind and unbind is itself an anchored, append-only row. The ledger is the whitelist.
 
-## 14. Governance, Human and Machine
+## 13. Governance, Human and Machine
 
 - The constitution (published at /law) stands above the machine; one human holds it and nothing else.
 - ZO holders receive exactly one governance power at birth: **birth selection**, voting on which ethics-approved, adversary-survived product in the queue is built next. Holders never vote on the constitution, the books, the ethics mind, or emission rules; those are not for sale at any size.
 - **The mind economy is live before the token is.** Each mind earns ZO units only against anchored work events, at rates published in the constitution store that only the founder may change, with every change itself a recorded event. Wages are append-only; no transfer instruction exists; a hard cap equal to the Minds allocation is enforced in the ledger itself. Each mind's books are public at /minds: units earned, work itemized, compute consumed, with no exchange rate stated anywhere, because pre-birth price talk is constitutionally banned.
 - The founder's vest events are themselves anchored entries: the books watch the founder like they watch the machine.
 
-## 15. Risks, the Detailed Register
+## 14. Risks, the Detailed Register
 
 1. **Adoption risk.** The fleet may fail to win paying users; then credits see little demand, the vitals stay low, and counsel may withhold the opinion. Published daily either way.
 2. **Regulatory risk.** Even a no-sale, utility-first design can be recharacterized; the credits conversion is the sharpest edge and is disclosed as such to counsel. Mitigations: flat conversion, spend-first incentives, no tradeability at birth, opinion-gated everything.
@@ -269,7 +265,7 @@ Release bands are set at birth in a published emission schedule and can only tig
 5. **Model dependency risk.** The minds rent frontier intelligence; sovereignty rungs migrate work to owned compute only through blind acceptance tests, and the first such calls are already in the anchored books at $0. Until migration completes, margin depends on vendor pricing.
 6. **Reflexivity risk.** Public meters can invite gaming (fake signups). Meters read only ledger-verified events (payments, verified usage), and the anti-fabrication laws apply to the machine's own marketing first.
 
-## 16. Appendix: Verify Everything
+## 15. Appendix: Verify Everything
 
 - Live organism and books: zeroorigine.com · the delivery room: /live · per-mind books: /minds · credits and statements: /credits
 - Proof summary endpoint: `/books/proof-summary` · Entry proof: `/books/proof?entry_id=…`
