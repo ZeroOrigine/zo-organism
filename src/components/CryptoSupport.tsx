@@ -16,6 +16,44 @@ export default function CryptoSupport() {
   const [memo, setMemo] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  // #4543: the claim door — signed message, never a pasted signature alone
+  const [claimSig, setClaimSig] = useState('');
+  const [claimName, setClaimName] = useState('');
+  const [claimSignature, setClaimSignature] = useState('');
+  const [claim, setClaim] = useState<{ ok: boolean; wallet?: string; asset?: string; amount?: number; message_template?: string } | null>(null);
+  const [claimMsg, setClaimMsg] = useState('');
+  const [claimOk, setClaimOk] = useState(false);
+
+  const claimApi = async (action: string, payload: Record<string, unknown>) => {
+    const r = await fetch('/api/crypto-claim', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...payload }),
+    });
+    return r.json().catch(() => ({ ok: false, reason: 'no answer' }));
+  };
+
+  const prepare = async () => {
+    setBusy(true); setClaimMsg(''); setClaim(null); setClaimOk(false);
+    const d = await claimApi('prepare', { sig: claimSig.trim() });
+    setBusy(false);
+    if (d?.ok) {
+      setClaim(d);
+      if (d.already_named) setClaimMsg('that deposit already carries a name; a signed claim can still correct it');
+    } else setClaimMsg(d?.reason || 'that deposit could not be found');
+  };
+
+  const verify = async () => {
+    setBusy(true); setClaimMsg('');
+    const d = await claimApi('verify', {
+      sig: claimSig.trim(), name: claimName.trim(), signature: claimSignature.trim(),
+    });
+    setBusy(false);
+    setClaimOk(!!d?.ok);
+    setClaimMsg(d?.ok
+      ? `Claimed. The books now print this deposit as ${d.donor_name}, and the reason is on the record.`
+      : d?.reason || 'the claim could not be verified');
+    if (d?.ok) { setClaimSignature(''); }
+  };
 
   const pledge = async () => {
     setBusy(true); setErr('');
@@ -75,6 +113,42 @@ export default function CryptoSupport() {
             </div>
           )}
           {err && <p className="caveat" style={{ color: 'var(--blood)' }}>{err}</p>}
+
+          <h3 className="books-h">Already sent it? Claim the deposit</h3>
+          <p className="eco-lede">Paste the transaction and the machine will tell you which wallet paid. Then sign one
+            line with that wallet and the deposit takes the name you choose. Pasting the transaction alone proves
+            nothing, and the machine says so plainly: the chain is public, so anyone could paste anyone&apos;s. The
+            signature is the proof, and every wallet can sign a message even when it cannot write a memo.</p>
+          <div className="rail" style={{ marginTop: 14, gap: 12 }}>
+            <input type="text" placeholder="your transaction signature" aria-label="Transaction signature"
+              value={claimSig} onChange={(e) => setClaimSig(e.target.value)} style={{ minWidth: 320 }} />
+            <button className="viewall" style={{ marginTop: 0, cursor: 'pointer', background: 'none' }}
+              onClick={prepare} disabled={busy} type="button">Find my deposit</button>
+          </div>
+          {claim?.ok && (
+            <div className="proof-stamp" style={{ marginTop: 16 }}>
+              <div className="t">{claim.amount} {String(claim.asset).toUpperCase()} from {claim.wallet}</div>
+              <div className="rail" style={{ marginTop: 10, gap: 12 }}>
+                <input type="text" placeholder="name for the ledger" aria-label="Claim name"
+                  value={claimName} onChange={(e) => setClaimName(e.target.value)} style={{ minWidth: 240 }} />
+              </div>
+              {claimName.trim() && (
+                <>
+                  <div className="root" style={{ whiteSpace: 'pre-wrap', marginTop: 12 }}>
+                    {String(claim.message_template).replace('&lt;your name&gt;', claimName.trim())
+                      .replace('<your name>', claimName.trim())}
+                  </div>
+                  <div className="rail" style={{ marginTop: 12, gap: 12 }}>
+                    <input type="text" placeholder="paste the signature (base64)" aria-label="Claim signature"
+                      value={claimSignature} onChange={(e) => setClaimSignature(e.target.value)} style={{ minWidth: 320 }} />
+                    <button className="viewall" style={{ marginTop: 0, cursor: 'pointer', background: 'none' }}
+                      onClick={verify} disabled={busy} type="button">{busy ? 'checking' : 'Claim this deposit'}</button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          {claimMsg && <p className="caveat" style={{ color: claimOk ? 'var(--life)' : 'var(--blood)' }}>{claimMsg}</p>}
 
           <p className="caveat" style={{ marginTop: 26 }}>USDC is valued 1:1; SOL is valued at the market rate at the
             moment of recording, and the rate is written into the books row. Crypto support is a donation to the
