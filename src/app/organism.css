@@ -363,3 +363,29 @@
   .birthcert .foot{margin-top:16px;padding-top:12px;border-top:1px solid #1b2822;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   .birthcert .seal{width:34px;height:34px;border:1.5px solid #3bda8c;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#3bda8c;font-family:var(--serif);font-size:15px}
   .birthcert .note{font-size:10px;color:#8d978f;letter-spacing:.12em;text-transform:uppercase;text-align:right;line-height:1.7}
+
+  /* #4518: the credits email field is a first-class, themed control */
+  .credits-email{display:block;width:min(420px,100%);background:var(--void-2);color:var(--bone);
+    border:1px solid var(--bone-faint);border-radius:8px;padding:13px 16px;font-family:var(--mono);
+    font-size:15px;outline:none;transition:border-color .2s ease}
+  .credits-email::placeholder{color:var(--bone-dim);opacity:.7}
+  .credits-email:focus{border-color:var(--gold)}
+  .credits-email.has-err{border-color:var(--blood)}
+
+  /* #4517: the branded 404 — graveyard aesthetic, never a white flash */
+  .nf-wrap{min-height:62vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:60px 24px;background:var(--void)}
+  .nf-zero{width:74px;height:74px;border:2px solid var(--blood);border-radius:50%;display:flex;
+    align-items:center;justify-content:center;font-family:var(--serif);font-size:34px;color:var(--blood);
+    opacity:.85;margin-bottom:26px}
+  .nf-wrap h1{font-family:var(--serif);font-size:clamp(26px,4vw,40px);color:var(--bone);margin:0 0 10px}
+  .nf-wrap p{color:var(--bone-dim);font-size:16px;max-width:520px;margin:0 0 26px}
+  .nf-wrap .doors{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+  .nf-wrap .doors a{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--life);border:1px solid var(--bone-faint);border-radius:999px;padding:10px 20px;text-decoration:none}
+  .nf-wrap .doors a:hover{border-color:var(--life)}
+
+  /* #4516: a public correction note on a birth record */
+  .cert .correction{margin-top:18px;border-left:2px solid var(--gold);padding:10px 14px;
+    background:var(--void-2);color:var(--bone-dim);font-size:14px;line-height:1.7}
+  .cert .correction b{color:var(--gold);font-weight:500;letter-spacing:.08em;text-transform:uppercase;font-size:12px}

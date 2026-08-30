@@ -25,6 +25,10 @@ const nextConfig = {
             // these pages; the public site sends them home.
             { source: '/pricing', destination: '/economy', permanent: false },
             { source: '/auth/:path*', destination: '/', permanent: false },
+            // #4517: the human guess. /products is the register (a real
+            // page); /products/<slug> is the natural plural of the birth
+            // record and dead-ended on a 404. Send it to the record.
+            { source: '/products/:slug', destination: '/product/:slug', permanent: false },
           ]
         : []),
       // #307 E5: /minds is now a REAL page (the mind economy's public books);

@@ -4,7 +4,7 @@
 // key), the existing Stripe rails through /api/credits, and the language
 // law printed verbatim (C4). Machine voice, no em dash, honest everywhere.
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 
 const PACKS = [10, 25, 50, 100];
@@ -13,11 +13,18 @@ export default function CreditsPage() {
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState<number | null>(null);
   const [err, setErr] = useState('');
+  const [emailErr, setEmailErr] = useState('');
+  const emailRef = useRef<HTMLInputElement>(null);
 
   const buy = async (pack: number) => {
     setErr('');
+    setEmailErr('');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
-      setErr('Enter the email that will own the credits first. It is the account key and the receipt address.');
+      // #4518: the message lands AT the field, and the field takes focus —
+      // the visitor is never left with a dead button and no explanation.
+      setEmailErr('Enter the email that will own the credits. It is the account key and the receipt address.');
+      emailRef.current?.focus();
+      emailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     setBusy(pack);
@@ -51,17 +58,25 @@ export default function CreditsPage() {
               no yield, not an investment.</p>
           </div>
 
-          <div className="rail" style={{ marginTop: 34 }}>
+          <div className="credits-email-block" style={{ marginTop: 34 }}>
+            <label htmlFor="credits-email" className="eco-label gold" style={{ display: 'block', marginBottom: 8 }}>
+              STEP 1 · THE EMAIL THAT OWNS THE CREDITS
+            </label>
             <input
-              type="email" placeholder="the email that owns the credits" aria-label="Account email"
-              value={email} onChange={(e) => setEmail(e.target.value)} style={{ minWidth: 300 }}
+              id="credits-email" ref={emailRef}
+              type="email" placeholder="you@example.com" autoComplete="email"
+              className={'credits-email' + (emailErr ? ' has-err' : '')}
+              value={email} onChange={(e) => { setEmail(e.target.value); if (emailErr) setEmailErr(''); }}
             />
+            {emailErr && <p className="caveat" style={{ color: 'var(--blood)', marginTop: 8 }}>{emailErr}</p>}
+            <p className="caveat" style={{ marginTop: 8 }}>Step 2 is picking a pack below. The email is the account
+              key and the receipt address; login is a one-time email link, no password exists.</p>
           </div>
           <div className="meters" style={{ marginTop: 18, gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', display: 'grid' }}>
             {PACKS.map((p) => (
               <div className="meter" key={p} style={{ textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 28, color: 'var(--gold)' }}>${p}</div>
-                <p style={{ color: 'var(--bone-dim)', fontSize: 15, margin: '8px 0 14px' }}>{p * 100} credit cents</p>
+                <p style={{ color: 'var(--bone-dim)', fontSize: 15, margin: '8px 0 14px' }}>{p} ZO Credits at face</p>
                 <button className="viewall" style={{ marginTop: 0, cursor: 'pointer', background: 'none' }}
                   onClick={() => buy(p)} disabled={busy !== null}>
                   {busy === p ? 'opening checkout' : 'Buy this pack'}
@@ -70,6 +85,8 @@ export default function CreditsPage() {
             ))}
           </div>
           {err && <p className="caveat" style={{ color: 'var(--blood)', marginTop: 14 }}>{err}</p>}
+          <p className="caveat" style={{ marginTop: 14 }}>One ZO Credit carries a face value of one US dollar. The
+            account statement and the public books state balances in the same unit.</p>
 
           <h3 className="books-h">How spending works today</h3>
           <p className="eco-lede">Credits redeem against any product subscription in the fleet. The automated
