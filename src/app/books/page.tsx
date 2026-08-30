@@ -19,7 +19,7 @@ async function donationKeys(): Promise<Record<string, string>> {
   if (!url || !key) return {};
   try {
     const r = await fetch(
-      `${url}/rest/v1/v_donations_public?select=donation_id,created_at,amount&order=created_at.desc&limit=200`,
+      `${url}/rest/v1/v_donations_public?select=donation_id,created_at,amount,donor_name&order=created_at.desc&limit=200`,
       { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' });
     if (!r.ok) return {};
     const rows = (await r.json()) as
