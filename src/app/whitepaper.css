@@ -1,0 +1,112 @@
+/* Whitepaper v2.1 — the ledger-book design (cowork/prototypes 534bd7f),
+   ported onto the organism system: self-hosted IBM Plex faces, real routes,
+   live vitals. All rules scoped under .wpbook (organism.css owns .folio). */
+
+.wpbook{--wpaper:#f7f3e8;--wpaper2:#efe9d9;--wink:#1a231e;--wink2:#4a5650;--wdeep:#1e7a50;
+  --wgold:#a1751f;--wrule:#d9d2bf;background:var(--void);color:var(--bone);font-family:var(--serif);font-size:16px}
+.wpbook ::selection{background:rgba(30,122,80,.25)}
+.wpbook .wp-progress{position:fixed;top:0;left:0;height:2px;background:var(--life);width:0;z-index:60}
+
+.wpbook .cover{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:60px 24px 40px;position:relative}
+.wpbook .ring{width:92px;height:92px;border:1.5px solid var(--wdeep);border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:38px;color:var(--life);margin-bottom:38px;animation:wpbreathe 5s ease-in-out infinite}
+@keyframes wpbreathe{0%,100%{box-shadow:0 0 24px rgba(59,218,140,.10)}50%{box-shadow:0 0 54px rgba(59,218,140,.30)}}
+.wpbook .cover .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--life)}
+.wpbook .cover h1{font-weight:600;font-size:clamp(40px,6.4vw,86px);line-height:1.04;margin:26px 0;max-width:15ch;text-wrap:balance}
+.wpbook .cover .thesis{font-size:clamp(15px,1.6vw,19px);line-height:1.8;color:#c6c1b1;max-width:58ch;margin:0 auto 34px}
+.wpbook .cover .meta{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--bone-dim);line-height:2.2;text-transform:uppercase}
+.wpbook .cover .meta b{color:var(--bone);font-weight:500}
+.wpbook .cover .tx{font-family:var(--mono);font-size:8.5px;color:#57635a;margin-top:16px;word-break:break-all;max-width:560px}
+.wpbook .actions{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap;justify-content:center}
+.wpbook .btn{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;
+  padding:14px 30px;border-radius:999px;transition:.25s}
+.wpbook .btn.solid{border:1px solid var(--life);color:var(--life)}
+.wpbook .btn.solid:hover{background:var(--life);color:#04120b}
+.wpbook .btn.ghost{border:1px solid var(--line, #1c2922);color:var(--bone-dim)}
+.wpbook .btn.ghost:hover{color:var(--bone);border-color:var(--bone-dim)}
+
+.wpbook .book{position:relative;max-width:920px;margin:0 auto 90px;padding:0 18px}
+.wpbook .paper{background:var(--wpaper);color:var(--wink);border-radius:3px;
+  box-shadow:0 2px 0 #0c1410, 0 30px 90px rgba(0,0,0,.55), 0 0 120px rgba(59,218,140,.05);
+  border-top:6px solid var(--wdeep);padding:clamp(34px,7vw,86px) clamp(26px,8vw,96px) 70px}
+.wpbook .wfolio{padding:44px 0 10px;border-top:1px solid var(--wrule);margin-top:44px}
+.wpbook .wfolio:first-child{border-top:none;margin-top:0;padding-top:8px}
+.wpbook .fol-eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--wdeep);margin-bottom:10px}
+.wpbook .wfolio h2{font-weight:600;font-size:clamp(26px,3.4vw,36px);line-height:1.12;margin:0 0 20px;color:#101713;text-wrap:balance;font-family:var(--serif)}
+.wpbook .wfolio h3{font-weight:600;font-size:19px;margin:28px 0 10px;color:#101713}
+.wpbook .wfolio p,.wpbook .wfolio li{font-size:16.5px;line-height:1.85;color:#2c362f;margin:0 0 14px}
+.wpbook .wfolio ul,.wpbook .wfolio ol{padding-left:22px}
+.wpbook .wfolio li{margin-bottom:8px}
+.wpbook .wfolio strong{color:#101713}
+.wpbook .wfolio em{color:var(--wgold)}
+.wpbook .wfolio code{font-family:var(--mono);font-size:12.5px;background:var(--wpaper2);color:var(--wgold);
+  padding:1px 6px;border-radius:3px;word-break:break-all}
+.wpbook .lede::first-letter{font-size:64px;line-height:.82;float:left;padding:8px 12px 0 0;color:var(--wdeep);font-weight:600}
+.wpbook .pull{font-size:clamp(20px,2.6vw,26px);line-height:1.5;color:#101713;text-align:center;max-width:34ch;
+  margin:38px auto;padding:26px 10px;border-top:2px solid var(--wdeep);border-bottom:2px solid var(--wdeep);text-wrap:balance}
+.wpbook .pull .sig{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.26em;color:var(--wdeep);margin-top:14px;text-transform:uppercase}
+
+.wpbook .vitals{margin:22px 0;border:1px solid var(--wrule);border-radius:4px;overflow:hidden}
+.wpbook .vitals .lhead{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--wink2);background:var(--wpaper2);padding:9px 16px;border-bottom:1px solid var(--wdeep)}
+.wpbook .lrow{display:flex;align-items:baseline;gap:10px;padding:11px 16px;border-bottom:1px solid var(--wrule);font-size:14.5px}
+.wpbook .lrow:last-child{border-bottom:none}
+.wpbook .lrow:hover{background:#f2ecdc}
+.wpbook .lrow .k{color:#101713;font-weight:600;white-space:nowrap;font-size:13.5px}
+.wpbook .lrow .dots{flex:1;border-bottom:1.5px dotted #c9c1aa;transform:translateY(-4px)}
+.wpbook .lrow .v{color:var(--wdeep);font-family:var(--mono);font-size:12.5px;text-align:right;max-width:58%;line-height:1.6;font-variant-numeric:tabular-nums}
+.wpbook .lrow .v a{color:var(--wgold);text-decoration:none;font-size:9.5px;letter-spacing:.12em;margin-left:8px}
+.wpbook .astamp{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--wdeep);
+  border:1.5px solid var(--wdeep);border-radius:3px;padding:2px 7px;transform:rotate(-2deg);margin-left:8px;vertical-align:middle}
+
+.wpbook .alloc-bar{display:flex;height:44px;border-radius:4px;overflow:hidden;margin:20px 0 8px;border:1px solid var(--wrule)}
+.wpbook .alloc-bar div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:#f7f3e8;letter-spacing:.05em}
+.wpbook .a1{background:#1e7a50}.wpbook .a2{background:#2c9663}.wpbook .a3{background:#a1751f}
+.wpbook .a4{background:#3f4d45}.wpbook .a5{background:#5a6a60}.wpbook .a6{background:#75847a}
+.wpbook .alloc-legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:10px;color:var(--wink2);margin-bottom:14px}
+.wpbook .alloc-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+.wpbook .gates{position:relative;margin:26px 0;padding-left:26px}
+.wpbook .gates::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--wrule)}
+.wpbook .gate{position:relative;background:#fbf8ef;border:1px solid var(--wrule);border-radius:6px;padding:18px 22px;margin-bottom:16px}
+.wpbook .gate::before{content:"";position:absolute;left:-23px;top:24px;width:12px;height:12px;border-radius:50%;
+  background:var(--wpaper);border:2.5px solid var(--wrule)}
+.wpbook .gate.live::before{background:var(--wdeep);border-color:var(--wdeep)}
+.wpbook .gate .st{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;padding:3px 10px;border:1px solid currentColor;
+  border-radius:999px;margin-left:10px;vertical-align:2px}
+.wpbook .gate.live .st{color:var(--wdeep)} .wpbook .gate.designed .st{color:var(--wgold)} .wpbook .gate.never .st{color:#75847a}
+.wpbook .gate h3{margin:0 0 8px;font-size:18px}
+.wpbook .gate p{font-size:15px;margin-bottom:6px}
+
+.wpbook .laws{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+@media(max-width:700px){.wpbook .laws{grid-template-columns:1fr}}
+.wpbook .law{background:#fbf8ef;border:1px solid var(--wrule);border-radius:6px;padding:20px 22px 18px;position:relative}
+.wpbook .law .n{font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:var(--wdeep);text-transform:uppercase}
+.wpbook .law h3{margin:8px 0;font-size:17.5px}
+.wpbook .law p{font-size:14px;line-height:1.75;margin:0}
+.wpbook .law svg{position:absolute;top:16px;right:18px;opacity:.9}
+.wpbook .law.wide{grid-column:1/-1}
+.wpbook .time-block{background:#101713;color:var(--wpaper);border-radius:6px;padding:30px 34px;margin:24px 0;position:relative;overflow:hidden}
+.wpbook .time-block .bigday{position:absolute;right:18px;bottom:-22px;font-size:120px;font-weight:700;color:rgba(59,218,140,.08);font-family:var(--serif)}
+.wpbook .time-block .n{font-family:var(--mono);font-size:9px;letter-spacing:.26em;color:var(--life);text-transform:uppercase}
+.wpbook .time-block h3{color:var(--wpaper);font-size:20px;margin:8px 0 10px}
+.wpbook .time-block p{color:#c6c1b1;font-size:14.5px;line-height:1.8;margin:0;max-width:62ch}
+.wpbook .tbl-wrap{overflow-x:auto}
+.wpbook table.plain{border-collapse:collapse;width:100%;margin:14px 0;min-width:520px}
+.wpbook table.plain th{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--wink2);
+  text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--wdeep)}
+.wpbook table.plain td{font-size:14px;line-height:1.7;color:#2c362f;padding:10px;border-bottom:1px solid var(--wrule);vertical-align:top}
+.wpbook table.plain td:first-child{font-weight:600;color:#101713;white-space:nowrap}
+
+.wpbook .colophon{max-width:920px;margin:0 auto;padding:10px 24px 100px;text-align:center}
+.wpbook .colophon .z{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--bone-dim);line-height:2.4}
+.wpbook .colophon .z b{color:var(--life);font-weight:500}
+
+.wpbook .wp-toc{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:7px;opacity:0;transition:opacity .4s;pointer-events:none}
+.wpbook .wp-toc.on{opacity:1;pointer-events:auto}
+.wpbook .wp-toc a{width:7px;height:7px;border-radius:50%;background:#1c2922;transition:.25s}
+.wpbook .wp-toc a.on{background:var(--life);transform:scale(1.5)}
+.wpbook .wp-toc a:hover{background:var(--bone-dim)}
+@media(max-width:900px){.wpbook .wp-toc{display:none}}
+@media(prefers-reduced-motion:reduce){.wpbook .ring{animation:none}}

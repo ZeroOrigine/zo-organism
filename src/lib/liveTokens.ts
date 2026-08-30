@@ -35,6 +35,9 @@ export function whitepaperTokenValues(
     revenue_alltime: revenue ? money(revenue.v) : ABSENT,
     organs_registered: organs ? `${organs.v} (${organs.s})` : ABSENT,
     days_proven: proof && typeof proof.days_proven === 'number' ? String(proof.days_proven) : ABSENT,
+    // the as-of day is the latest anchored root's day — the date the
+    // document's dated figures stand under
+    as_of_day: proof?.latest_anchored?.day || proof?.latest?.day || ABSENT,
   };
 }
 
