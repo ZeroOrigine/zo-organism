@@ -27,6 +27,8 @@ jobs:
       - run: npm ci
       - name: THE NAV LAW — one header, mounted once, no page-local forks (#4505)
         run: node scripts/check-nav.mjs
+      - name: THE AUTH FLOW LAW — every browser client is PKCE, no token in a URL (#4603)
+        run: node scripts/check-auth-flow.mjs
       - run: npm run build
         env:
           # the crawl asserts the public site's redirects, so the build must

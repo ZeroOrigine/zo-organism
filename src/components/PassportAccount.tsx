@@ -29,6 +29,21 @@ async function api(action: string, payload: Record<string, unknown>) {
   return r.json().catch(() => ({ ok: false, reason: 'no answer' }));
 }
 
+// #4603(4): ONE client, and it asks for PKCE. supabase-js defaults to the
+// IMPLICIT flow, which returns a live bearer token in the URL fragment — the
+// founder's own screenshot of this bug carried a valid access token. PKCE
+// returns a short-lived ?code= instead, exchanged for the session by the
+// call below. detectSessionInUrl is off because that exchange is explicit
+// here; leaving it on lets the client race the page for the same code.
+async function sbClient() {
+  const { createClient } = await import('@supabase/supabase-js');
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    { auth: { flowType: 'pkce', detectSessionInUrl: false, persistSession: true } },
+  );
+}
+
 function loadSession(): string {
   try { return localStorage.getItem('zo_passport_session') || ''; } catch { return ''; }
 }
@@ -75,28 +90,37 @@ export default function PassportAccount() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
       const oauthErr = params.get('error_description') || params.get('error');
+      // #4603(4): under the implicit flow the token came back in the FRAGMENT,
+      // so it sat in the address bar, in history and in the founder's
+      // screenshot. The client now asks for PKCE, but a link opened from an
+      // old tab can still arrive this way: take it out of the URL on sight.
+      const leaked = window.location.hash.includes('access_token=');
+      if (leaked) history.replaceState(null, '', window.location.pathname);
       if (oauthErr) {
         setMsg(`GitHub sign-in failed: ${oauthErr}`);
         history.replaceState(null, '', window.location.pathname);
-      } else if (code || params.get('github') === '1') {
+      } else if (code || leaked) {
         setPhase('boot');
         try {
-          const { createClient } = await import('@supabase/supabase-js');
-          const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-                                  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+          const sb = await sbClient();
           let at = '';
           if (code) {
             const { data, error } = await sb.auth.exchangeCodeForSession(code);
             if (error) setMsg(`GitHub sign-in failed: ${error.message}`);
             at = data?.session?.access_token || '';
           }
-          if (!at) {
-            const { data } = await sb.auth.getSession();
-            at = data?.session?.access_token || '';
+          if (!at && leaked) {
+            // an implicit-flow return from a stale tab: honour it once so the
+            // person is not stranded, then never write it back to the URL
+            const frag = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+            at = frag.get('access_token') || '';
           }
           history.replaceState(null, '', window.location.pathname);
           if (at) {
-            const d = await api('github', { access_token: at });
+            // a passport already in hand means this is a LINK, not a second
+            // identity: send it so the machine binds to the passport the
+            // person is actually holding (#4603(2))
+            const d = await api('github', { access_token: at, session: loadSession() || '' });
             if (d?.ok) {
               setMsg(`GitHub verified as ${d.github}.` + (d.library?.granted
                 ? ' Library access is now granted to that account.'
@@ -124,9 +148,7 @@ export default function PassportAccount() {
   const signInWithGithub = async () => {
     setMsg('');
     try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-                              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
+      const sb = await sbClient();
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'github',
         options: { redirectTo: `${window.location.origin}/account` },
