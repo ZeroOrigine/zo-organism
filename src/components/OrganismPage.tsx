@@ -11,6 +11,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dual } from '@/lib/currency';
+import GalaxyBackdrop from '@/components/GalaxyBackdrop';
 import Link from 'next/link';
 import type { ProofSummary, SiteState } from '@/lib/siteState';
 
@@ -460,6 +461,8 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
 
       <main id="page" className={alive ? 'alive' : ''}>
         <section id="hero">
+          {/* #306 T7: the galaxy, whispered — dimmed, blurred, behind everything */}
+          <GalaxyBackdrop />
           <canvas id="organism" ref={heroCv} aria-hidden="true" />
           <div id="organ-tip" ref={tipRef} role="status" />
           <div className="hero-copy">
