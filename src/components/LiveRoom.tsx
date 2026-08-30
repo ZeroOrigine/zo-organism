@@ -22,11 +22,12 @@ interface FeedLine { t: string; stage: string; line: string }
 interface Ethics { verdict: string; score: number | null; reasoning: string; date: string }
 interface LivePayload {
   mode: 'live' | 'replay'; in_flight: boolean;
+  kind?: 'research' | 'birth';
   project?: { name: string; status: string };
   stages?: Stage[]; feed?: FeedLine[]; ethics?: Ethics | null;
   qa_findings_open?: number;
   cost?: { run_usd?: number; today_usd: number; daily_budget_usd: number };
-  tokens?: number | null;
+  tokens?: { run?: number } | null;
   exam?: { zero_cost: boolean } | null;
   elapsed_min?: number | null;
   replay?: { name: string; born: string; cost_usd: number; stages: Stage[]; feed: FeedLine[]; ethics: Ethics | null } | null;
@@ -106,7 +107,7 @@ export default function LiveRoom() {
     setShownFeed(lines.slice(-3));
     const idx = stageIndexOf(d.feed || []);
     setStageIdx(idx);
-    const isResearch = idx <= 0 || (d.project?.status || '') === 'researching';
+    const isResearch = d.kind === 'research' || idx <= 0 || (d.project?.status || '') === 'researching';
     anim.current.rate = isResearch ? 0.55 : 0.55 + Math.max(0, idx) * 0.09;
     if (lines.length > prevCount.current) { anim.current.pulse = 1; }
     prevCount.current = lines.length;
@@ -165,9 +166,11 @@ export default function LiveRoom() {
     size();
     window.addEventListener('resize', size);
     let raf = 0, phase = 0, last = performance.now();
+    // #4522(1): a tighter arc with real stars — the first cut spread tiny
+    // dim nodes across the full width and the founder could not read them.
     const stagePos = (i: number) => {
       const t = i / (STAGE_KEYS.length - 1);
-      return [cv.width * 0.14 + t * cv.width * 0.72, cv.height * 0.80 - Math.sin(t * Math.PI) * cv.height * 0.10] as const;
+      return [cv.width * 0.19 + t * cv.width * 0.62, cv.height * 0.78 - Math.sin(t * Math.PI) * cv.height * 0.13] as const;
     };
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -204,21 +207,24 @@ export default function LiveRoom() {
         if (i > 0 && i - 1 <= stageIdx) {
           const [ax, ay] = stagePos(i - 1);
           cx.beginPath(); cx.moveTo(ax, ay); cx.lineTo(p, q);
-          cx.strokeStyle = i <= stageIdx ? 'rgba(59,218,140,0.35)' : 'rgba(40,58,50,0.5)';
-          cx.lineWidth = 1 * s; cx.stroke();
+          cx.strokeStyle = i <= stageIdx ? 'rgba(59,218,140,0.45)' : 'rgba(40,58,50,0.6)';
+          cx.lineWidth = 1.6 * s; cx.stroke();
         }
-        cx.beginPath(); cx.arc(p, q, (cur ? 5 : 3.4) * s, 0, 7);
-        cx.fillStyle = failHere ? '#e0604c' : lit ? (cur ? '#d4a94e' : '#3bda8c') : '#22322b';
+        cx.beginPath(); cx.arc(p, q, (cur ? 9 : 6) * s, 0, 7);
+        cx.fillStyle = failHere ? '#e0604c' : lit ? (cur ? '#d4a94e' : '#3bda8c') : '#2c3f36';
         cx.fill();
         if (lit) {
-          cx.save(); cx.filter = `blur(${5 * s}px)`;
-          cx.beginPath(); cx.arc(p, q, (cur ? 11 : 7) * s, 0, 7);
-          cx.fillStyle = failHere ? 'rgba(224,96,76,0.5)' : cur ? 'rgba(212,169,78,0.5)' : 'rgba(59,218,140,0.35)';
+          cx.save(); cx.filter = `blur(${7 * s}px)`;
+          cx.beginPath(); cx.arc(p, q, (cur ? 19 : 12) * s, 0, 7);
+          cx.fillStyle = failHere ? 'rgba(224,96,76,0.6)' : cur ? 'rgba(212,169,78,0.6)' : 'rgba(59,218,140,0.45)';
           cx.fill(); cx.restore();
         }
-        cx.fillStyle = lit ? '#8d978f' : '#3d4a43';
-        cx.font = `${9 * s}px var(--mono), monospace`; cx.textAlign = 'center';
-        cx.fillText(STAGE_SHORT[STAGE_KEYS[i]], p, q + 18 * s);
+        // canvas font cannot resolve a CSS variable — 'var(--mono)' was
+        // silently ignored and the labels fell to the default face
+        cx.fillStyle = failHere ? '#e0604c' : lit ? '#c9d2ca' : '#55645b';
+        const fs = Math.max(11, Math.min(13.5, cv.clientWidth / 58));
+        cx.font = `${fs * s}px 'IBM Plex Mono', 'SFMono-Regular', monospace`; cx.textAlign = 'center';
+        cx.fillText(STAGE_SHORT[STAGE_KEYS[i]], p, q + 26 * s);
       }
       // gene shower (C4)
       a.shower.forEach((g) => { g.y += g.v * s; g.v += 0.05; g.a -= 0.006;
@@ -254,7 +260,8 @@ export default function LiveRoom() {
           <div className="cn-meters">
             {isLive && cost && <span>run <b>${Number(cost.run_usd ?? 0).toFixed(6)}</b></span>}
             {!isLive && d?.replay && <span>cost of birth <b>${d.replay.cost_usd.toFixed(2)}</b></span>}
-            {typeof d?.tokens === 'number' && <span>tokens <b>{d.tokens.toLocaleString()}</b></span>}
+            {typeof d?.tokens?.run === 'number' && d.tokens.run > 0 &&
+              <span>tokens <b>{d.tokens.run.toLocaleString()}</b></span>}
             {typeof elapsed === 'number' && isLive && <span>elapsed <b>{Math.floor(elapsed / 60)}h {elapsed % 60}m</b></span>}
             <span>stage <b>{Math.max(0, stageIdx + 1)} of {STAGE_KEYS.length}</b></span>
             {typeof d?.qa_findings_open === 'number' && isLive && <span>open findings <b>{d.qa_findings_open}</b></span>}
