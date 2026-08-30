@@ -86,15 +86,22 @@ export default async function BooksPage() {
             <div className="ledger"><table>
               <tbody>
                 <tr><td>Gross payment events, all time</td><td className="num">{usd(rc.gross_cents)}<Dual usd={rc.gross_cents / 100} /></td></tr>
-                <tr><td>less founder drills and self-tests</td><td className="num">-{usd(rc.test_drill_cents)}</td></tr>
+                <tr><td>less founder drills (payments made to test the rails)</td><td className="num">-{usd(rc.test_drill_cents)}</td></tr>
                 <tr><td>less refunds</td><td className="num">-{usd(rc.refund_cents)}</td></tr>
+                <tr><td>less the founder buying from his own machine (a self-test, never arm&apos;s-length revenue)</td><td className="num">-{usd(rc.self_test_reclass_cents)}</td></tr>
                 <tr><td>less supporter contributions (they live in the supporter ledger below, not in revenue)</td><td className="num">-{usd(rc.support_reclass_cents)}</td></tr>
                 <tr><td>less credit purchases held as deferred revenue (gift-card model; recognized only when spent)</td><td className="num">-{usd(rc.credits_reclass_cents)}</td></tr>
+                {!!rc.unexplained_cents && (
+                  <tr><td><b>unexplained difference (this should be zero: the deductions above do not account for the whole gap)</b></td>
+                    <td className="num"><b>{usd(rc.unexplained_cents)}</b></td></tr>
+                )}
                 <tr><td><b>Recognized revenue (the number the home page shows)</b></td><td className="num"><b>{usd(rc.recognized_cents)}</b><Dual usd={rc.recognized_cents / 100} /></td></tr>
               </tbody>
             </table></div>
             <p className="caveat">Corrections are made by reversal entries that reference the original, never by deletion;
-              every line above is a row in zo_revenue_events or zo_credits_entries and ties to the cent.</p>
+              every line above is a row in zo_revenue_events or zo_credits_entries. Subtract the deductions from the gross
+              and you get the recognized figure exactly: the books publish what is left over, so a deduction nobody named
+              would appear above as an unexplained difference rather than as a hole for the reader to find.</p>
 
             <h3 className="books-h">Credits outstanding (what the machine owes)</h3>
             <div className="ledger"><table>

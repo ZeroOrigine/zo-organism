@@ -40,6 +40,10 @@ export interface BooksReconEntry { date: string; product: string; amount_cents: 
 export interface BooksReconciliation {
   gross_cents: number; test_drill_cents: number; refund_cents: number;
   credits_reclass_cents: number; support_reclass_cents: number; recognized_cents: number;
+  // #4598: the reversal that had no name, and the leftover that proves the
+  // rest are complete. unexplained_cents is zero or the books are wrong.
+  self_test_reclass_cents: number; unexplained_cents: number;
+  reclass_by_reason?: Record<string, number>;
   credits: { purchased_cents: number; spent_cents: number; refunded_cents: number; converted_cents: number; outstanding_cents: number };
   entries: BooksReconEntry[];
 }
