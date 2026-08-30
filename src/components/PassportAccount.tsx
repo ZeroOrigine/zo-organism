@@ -68,24 +68,50 @@ export default function PassportAccount() {
         setPhase('login');
         return;
       }
-      if (new URLSearchParams(window.location.search).get('github') === '1') {
+      // GitHub returns with a PKCE ?code= that must be EXCHANGED for a
+      // session. The first version called getSession() straight away and
+      // raced the client's own background exchange, so the door recorded
+      // nothing and said nothing — the founder clicked and landed nowhere.
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const oauthErr = params.get('error_description') || params.get('error');
+      if (oauthErr) {
+        setMsg(`GitHub sign-in failed: ${oauthErr}`);
+        history.replaceState(null, '', window.location.pathname);
+      } else if (code || params.get('github') === '1') {
         setPhase('boot');
         try {
           const { createClient } = await import('@supabase/supabase-js');
           const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '',
                                   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
-          const { data } = await sb.auth.getSession();
-          const at = data?.session?.access_token;
+          let at = '';
+          if (code) {
+            const { data, error } = await sb.auth.exchangeCodeForSession(code);
+            if (error) setMsg(`GitHub sign-in failed: ${error.message}`);
+            at = data?.session?.access_token || '';
+          }
+          if (!at) {
+            const { data } = await sb.auth.getSession();
+            at = data?.session?.access_token || '';
+          }
+          history.replaceState(null, '', window.location.pathname);
           if (at) {
             const d = await api('github', { access_token: at });
-            setMsg(d?.ok
-              ? `GitHub verified as ${d.github}.` + (d.library?.granted
-                  ? ' Library access is now granted to that account.'
-                  : ' No library entitlement on this address yet.')
-              : d?.reason || 'that GitHub session could not be verified');
+            if (d?.ok) {
+              setMsg(`GitHub verified as ${d.github}.` + (d.library?.granted
+                ? ' Library access is now granted to that account.'
+                : ' No library entitlement on this address yet.'));
+              if (d.session) { saveSession(d.session); setSession(d.session); await refresh(d.session); return; }
+            } else {
+              setMsg(d?.reason || 'that GitHub session could not be verified');
+            }
+          } else if (!oauthErr) {
+            setMsg('GitHub returned no session; nothing was changed.');
           }
-        } catch { setMsg('the GitHub session could not be read'); }
-        history.replaceState(null, '', window.location.pathname);
+        } catch (e) {
+          setMsg(`the GitHub session could not be read: ${(e as Error).message}`);
+        }
+        setPhase('login');
       }
       const s = loadSession();
       if (s) { setPhase('boot'); setSession(s); await refresh(s); }
@@ -103,9 +129,9 @@ export default function PassportAccount() {
                               process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'github',
-        options: { redirectTo: `${window.location.origin}/account?github=1` },
+        options: { redirectTo: `${window.location.origin}/account` },
       });
-      if (error) setMsg('GitHub sign-in could not start; the email link still works.');
+      if (error) setMsg(`GitHub sign-in could not start: ${error.message}`);
     } catch {
       setMsg('GitHub sign-in could not start; the email link still works.');
     }
