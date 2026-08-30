@@ -125,6 +125,18 @@ export interface WhitepaperDoc { version: string; note: string; markdown: string
 // #305 E3: the sovereignty exam scoreboard.
 export interface ExamRun {
   started: string; ended: string | null; status: string;
+  // #4555: derived from the ledger at request time, not from a snapshot
+  // written when the run started — the board once advertised a dead run as
+  // "running · in the room now" for 39 minutes after it had failed.
+  project?: string | null; project_status?: string | null;
+  stages_reached?: string[];
+  stage_died_at?: string | null;
+  failure_reason?: string | null;
+  failure_actor?: string | null;
+  local_calls?: number; tokens?: number; paid_usd?: number;
+  zero_paid_calls?: boolean | null;
+  artifacts_kept?: boolean;
+  board_note?: string | null;
   stages: { seen?: Record<string, string>; local_calls?: number; cloud_paid_calls_in_window?: number; zero_anthropic?: boolean };
   models: Record<string, string>;
 }

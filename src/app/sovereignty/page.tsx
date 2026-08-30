@@ -45,23 +45,48 @@ export default async function SovereigntyPage() {
           <h3 className="books-h">The scoreboard</h3>
           {data && data.runs.length > 0 ? (
             <div className="ledger"><table>
-              <thead><tr><th>Started</th><th>Status</th><th>Stages reached</th><th className="num">Local calls</th><th>Zero paid calls</th></tr></thead>
+              <thead><tr><th>Started</th><th>Status</th><th>Stages reached</th><th className="num">Local calls</th><th className="num">Tokens</th><th>Zero paid calls</th></tr></thead>
               <tbody>
                 {data.runs.map((r, i) => (
                   <tr key={i}>
-                    <td className="mono">{r.started}</td>
+                    <td className="mono">{r.started.replace('T', ' ')}</td>
                     <td className="mono">{r.status}{data.exam_mode && r.status === 'running' ? ' · in the room now' : ''}</td>
-                    <td>{Object.keys(r.stages?.seen || {}).map((s) => STAGE_LABELS[s] || s).join(' · ') || 'armed'}</td>
-                    <td className="num">{r.stages?.local_calls ?? 0}</td>
-                    <td className="mono">{r.stages?.zero_anthropic === undefined ? 'open' : r.stages.zero_anthropic ? 'YES' : 'NO'}</td>
+                    <td>{(r.stages_reached && r.stages_reached.length
+                      ? r.stages_reached.map((s) => STAGE_LABELS[s] || s).join(' · ')
+                      : Object.keys(r.stages?.seen || {}).map((s) => STAGE_LABELS[s] || s).join(' · '))
+                      || <span className="dimcell">no stage reached</span>}</td>
+                    <td className="num">{r.local_calls ?? r.stages?.local_calls ?? 0}</td>
+                    <td className="num">{typeof r.tokens === 'number' ? r.tokens.toLocaleString() : '—'}</td>
+                    <td className="mono">{r.zero_paid_calls === null || r.zero_paid_calls === undefined
+                      ? (r.stages?.zero_anthropic === undefined ? 'open' : r.stages.zero_anthropic ? 'YES' : 'NO')
+                      : r.zero_paid_calls ? 'YES' : 'NO'}</td>
                   </tr>
                 ))}
               </tbody>
             </table></div>
+
           ) : (
             <p className="eco-lede">No exam has been attempted yet. The first row lands here the day the machine sits
               its first exam, pass or fail.</p>
           )}
+          {data && data.runs.filter((r) => r.failure_reason).map((r, i) => (
+            <div className="gatebox" key={`fail-${i}`} style={{ marginTop: 18, borderLeftColor: 'var(--blood)' }}>
+              <p className="eco-label" style={{ color: 'var(--blood)' }}>
+                WHY THE {r.started.replace('T', ' ')} RUN ENDED
+              </p>
+              <p>{r.failure_reason}</p>
+              <p className="caveat" style={{ marginTop: 10 }}>
+                Died at stage <b>{r.stage_died_at || 'unrecorded'}</b>; declared by{' '}
+                <b>{r.failure_actor || 'an unnamed actor'}</b>.{' '}
+                {r.local_calls ? `${r.local_calls} local calls, ${(r.tokens || 0).toLocaleString()} tokens, ` : ''}
+                {typeof r.paid_usd === 'number' ? `$${r.paid_usd.toFixed(6)} paid to any model provider. ` : ''}
+                {r.artifacts_kept
+                  ? 'The code the models wrote is preserved on the record: it is evidence whether or not it shipped.'
+                  : ''}
+              </p>
+            </div>
+          ))}
+
           <p className="caveat">Stages derive from the same event ledger every birth writes; the zero-paid-calls
             column is a query over the public cost books, not a claim. Models on the node today: qwen3:32b (reasoning)
             and qwen2.5-coder:32b (code), served by Ollama on a 48GB machine the founder owns.</p>
