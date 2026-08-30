@@ -19,6 +19,9 @@ interface View {
   bindings?: Binding[];
   entitlements?: { credits_balance_cents?: number; library?: { status: string; github: string | null } };
   ledger?: LedgerRow[]; deletion_note?: string;
+  // #319: consolidations this passport has absorbed. A merge is a posting and
+  // it shows on the page, permanently.
+  merges?: { absorbed: string; at: string; bindings_moved: number; note: string }[];
 }
 
 async function api(action: string, payload: Record<string, unknown>) {
@@ -44,6 +47,18 @@ async function sbClient() {
   );
 }
 
+// #319: to consolidate two passports the person must prove BOTH inside one
+// window, and proving the second replaces the first in this browser. The first
+// session is stashed here across that round trip, and nothing is merged until
+// they confirm: proving an address is never itself a merge.
+function loadMergeFrom(): string {
+  try { return sessionStorage.getItem('zo_passport_merge_from') || ''; } catch { return ''; }
+}
+function saveMergeFrom(s: string) {
+  try { if (s) sessionStorage.setItem('zo_passport_merge_from', s); else sessionStorage.removeItem('zo_passport_merge_from'); }
+  catch { /* private mode: the merge simply cannot be offered */ }
+}
+
 function loadSession(): string {
   try { return localStorage.getItem('zo_passport_session') || ''; } catch { return ''; }
 }
@@ -63,6 +78,8 @@ export default function PassportAccount() {
   const [wallet, setWallet] = useState('');
   const [sig, setSig] = useState('');
   const [nonce, setNonce] = useState('');
+  const [mergeFrom, setMergeFrom] = useState('');
+  const [mergeEmail, setMergeEmail] = useState('');
 
   const refresh = useCallback(async (s: string) => {
     const d = await api('view', { session: s });
@@ -78,7 +95,13 @@ export default function PassportAccount() {
         setPhase('boot');
         history.replaceState(null, '', window.location.pathname);
         const d = await api('session', { token: m[1] });
-        if (d?.ok && d.session) { saveSession(d.session); setSession(d.session); await refresh(d.session); return; }
+        if (d?.ok && d.session) {
+          saveSession(d.session); setSession(d.session);
+          // a stashed session from before this link means the person is part
+          // way through a consolidation: offer it, never perform it
+          setMergeFrom(loadMergeFrom());
+          await refresh(d.session); return;
+        }
         setMsg(d?.reason || 'that link did not work; request a new one');
         setPhase('login');
         return;
@@ -254,6 +277,91 @@ export default function PassportAccount() {
               </table></div>
               <p className="caveat">A binding stores a hash of the value, never the value: the machine can recognize
                 you without holding you. These are the hints it can show back.</p>
+
+              {/* REC #319: arriving twice is normal human behaviour. Until
+                  this existed, the sentence at the top of this page was false
+                  for anyone who signed up by email and came back through a
+                  provider under a different address, and their balance was
+                  stranded on the identity they could no longer reach. */}
+              <h3 className="books-h">Arrived twice?</h3>
+              {v.merges && v.merges.length > 0 && (
+                <div className="ledger"><table><tbody>
+                  {v.merges.map((m) => (
+                    <tr key={m.absorbed}>
+                      <td className="mono">{m.absorbed}</td>
+                      <td>merged into this passport</td>
+                      <td className="mono">{m.at}</td>
+                    </tr>
+                  ))}
+                </tbody></table></div>
+              )}
+              {mergeFrom && mergeFrom !== session ? (
+                <>
+                  <p className="caveat">
+                    You proved another identity a moment ago and have now proved this one. Consolidating keeps the
+                    OLDER passport and moves everything onto it. Nothing is deleted: the absorbed id keeps resolving
+                    forever, because anchored ledger rows point at it and must go on verifying.
+                  </p>
+                  <button
+                    type="button"
+                    className="viewall" style={{ marginTop: 0, cursor: 'pointer', background: 'none' }}
+                    disabled={busy}
+                    onClick={async () => {
+                      setBusy(true); setMsg('');
+                      const d = await api('merge', { session, other_session: mergeFrom });
+                      setBusy(false);
+                      if (d?.ok) {
+                        saveMergeFrom(''); setMergeFrom('');
+                        setMsg(`Consolidated. ${d.absorbed} now redirects to ${d.survivor}; `
+                             + `${d.bindings_moved} binding(s) moved.`);
+                        await refresh(session);
+                      } else {
+                        setMsg(d?.reason || 'the merge was refused');
+                      }
+                    }}
+                  >{busy ? 'consolidating…' : 'consolidate these two identities'}</button>
+                  <button
+                    type="button"
+                    className="viewall"
+                    style={{ marginTop: 0, marginLeft: 14, cursor: 'pointer', background: 'none' }}
+                    onClick={() => { saveMergeFrom(''); setMergeFrom(''); setMsg('Left as two identities.'); }}
+                  >keep them separate</button>
+                </>
+              ) : (
+                <>
+                  <p className="caveat">
+                    If you also reach this machine under another address, prove it here and the two become one. Both
+                    identities must be proven within {30} minutes of each other, because a merge that is easy to
+                    perform is a merge that is easy to abuse: it would let one weak identity absorb a strong one,
+                    and with it the credits, the library and every product account. Proving an address is never
+                    itself a merge; you confirm it afterwards, deliberately.
+                  </p>
+                  <div className="rail" style={{ marginTop: 14, gap: 12 }}>
+                    <input
+                      type="email"
+                      aria-label="Your other email address"
+                      placeholder="your other email address"
+                      value={mergeEmail}
+                      onChange={(e) => setMergeEmail(e.target.value)}
+                      style={{ minWidth: 300 }}
+                    />
+                    <button
+                      type="button"
+                      className="viewall" style={{ marginTop: 0, cursor: 'pointer', background: 'none' }}
+                      disabled={busy || !mergeEmail.trim()}
+                      onClick={async () => {
+                        setBusy(true); setMsg('');
+                        saveMergeFrom(session); setMergeFrom(session);
+                        const d = await api('login', { email: mergeEmail.trim() });
+                        setBusy(false);
+                        setMsg(d?.sent
+                          ? 'Link sent. Open it in this browser within 30 minutes and you will be asked to confirm.'
+                          : (d?.reason || 'the link could not be sent'));
+                      }}
+                    >send a link to that address</button>
+                  </div>
+                </>
+              )}
 
               <h3 className="books-h">Prove a wallet</h3>
               <p className="eco-lede">This is how money finds its owner. Sign the exact message below with the wallet

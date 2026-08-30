@@ -16,6 +16,7 @@ const ROUTES: Record<string, string> = {
   revoke: '/passport/revoke',
   export: '/passport/export',
   github: '/passport/github',
+  merge: '/passport/merge',
 };
 
 export async function POST(req: Request) {
