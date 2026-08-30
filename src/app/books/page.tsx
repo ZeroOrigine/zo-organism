@@ -155,7 +155,9 @@ export default async function BooksPage() {
           </tbody>
         </table></div>
         <p className="caveat">Each day&apos;s entries hash into one root; each root chains to the previous day&apos;s and is
-          anchored on a public chain. Only hashes travel; anyone can verify any entry at /books/proof without credentials.</p>
+          anchored on a public chain. Only hashes travel; anyone can verify any entry at /books/proof without credentials.
+          On the explorer page, expand the transaction&apos;s first instruction: the memo carries the day and the root,
+          in plain text.</p>
 
         <Link className="viewall" href="/">back to the organism</Link>
       </section>

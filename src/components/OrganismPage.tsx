@@ -521,7 +521,8 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
           </table></div>
           <Link className="viewall" href="/products">View the full registry · {state.products.length} products</Link>
           <p className="caveat">A product is &quot;launched&quot; only after the machine walks its own front door on the live site:
-            signup, login, password reset, the core action, and checkout. Births before August 2026 predate per-product
+            signup, login, password reset, the core action, and checkout, or, for products built without accounts,
+            the core action alone. Births before August 2026 predate per-product
             cost attribution; their costs live in the aggregate books below and are marked accordingly. No number is invented to fill a cell.</p>
         </section>
 
@@ -600,6 +601,9 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
             </div>
           )}
           <Link className="viewall" href="/books">View the full books</Link>
+          <p className="caveat">This folio reads a rolling 30 days ending now; the statement at /books uses calendar
+            months, so the two can differ by a few cents mid-month by design. On the Solana link, expand the
+            transaction&apos;s first instruction: the memo carries the day and the root.</p>
           <p className="caveat">Every section on this page renders from one live payload read from the machine&apos;s own
             state endpoint, so new births, deaths, genes, and entries appear here with no design change. The zero stays
             on the page until it is not zero.</p>

@@ -34,7 +34,10 @@ function saveSession(s: string) {
 }
 
 export default function CreditsAccount({ products }: { products: LiveProduct[] }) {
-  const [phase, setPhase] = useState<'boot' | 'login' | 'account'>('boot');
+  // #4520(4): the login form is the DEFAULT render, so a logged-out visitor
+  // (and the server-rendered page) sees the way in immediately; 'boot' shows
+  // only while an actual token or stored session is being exchanged.
+  const [phase, setPhase] = useState<'boot' | 'login' | 'account'>('login');
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [msg, setMsg] = useState('');
@@ -56,14 +59,16 @@ export default function CreditsAccount({ products }: { products: LiveProduct[] }
       const hash = typeof window !== 'undefined' ? window.location.hash : '';
       const m = hash.match(/#t=([A-Za-z0-9_-]+)/);
       if (m) {
+        setPhase('boot');
         history.replaceState(null, '', window.location.pathname);
         const d = await api('session', { token: m[1] });
         if (d?.ok && d.session) { saveSession(d.session); setSession(d.session); await refresh(d.session); return; }
         setMsg(d?.reason || 'that link did not work; request a new one');
+        setPhase('login');
+        return;
       }
       const sess = loadSession();
-      if (sess) { setSession(sess); await refresh(sess); return; }
-      setPhase('login');
+      if (sess) { setPhase('boot'); setSession(sess); await refresh(sess); return; }
     })();
   }, [refresh]);
 
