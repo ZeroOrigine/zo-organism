@@ -20,7 +20,11 @@ interface Proof {
   day?: string; prev_root?: string; chained_root?: string; chain_recipe?: string;
   solana_sig?: string | null; solana_explorer?: string | null;
   memo_format?: string;
+  // why there is no leaf, decided by the machine and never by this page
   reason?: string;
+  explain?: string;
+  entry_day?: string;
+  chain_covers?: [string, string];
 }
 
 export function Copyable({ text, label }: { text: string; label?: string }) {
@@ -51,9 +55,20 @@ export default function ProofCell({ entryId, table, compact }: {
     setBusy(true);
     try {
       const r = await fetch(`/api/proof?entry_id=${encodeURIComponent(entryId)}&table=${encodeURIComponent(table)}`);
-      setP(await r.json());
+      // REC #312 clause 2: a request that failed is not an entry that has no
+      // proof. Both used to print the same opening words.
+      if (!r.ok) {
+        setP({ found: false, reason: 'unreachable',
+               explain: `The proof endpoint answered ${r.status}. This says nothing about whether `
+                      + `this entry is in the chain: the machine could not be asked. `
+                      + `/books/proof answers the same question directly, without an account.` });
+      } else {
+        setP(await r.json());
+      }
     } catch {
-      setP({ found: false, reason: 'the proof endpoint could not be reached just now' });
+      setP({ found: false, reason: 'unreachable',
+             explain: 'The proof endpoint could not be reached just now. This says nothing about '
+                    + 'whether this entry is in the chain: the machine could not be asked.' });
     }
     setBusy(false);
   };
@@ -66,10 +81,18 @@ export default function ProofCell({ entryId, table, compact }: {
       {open && (
         <div className="pf-panel">
           {busy && <p className="pf-note">asking the machine for this entry&apos;s proof…</p>}
+          {/* REC #312 clause 2: this used to answer EVERY not-found with one
+              fixed sentence — that the entry predates the proof layer, which
+              began on 2026-08-14. It told a donation recorded on 2026-08-30
+              exactly that. The machine knows which of three things is true
+              (older than the chain, newer than the last root computed, or
+              genuinely absent from a rooted day) and now says so; the page
+              prints what it was told and invents nothing. */}
           {!busy && p && !p.found && (
-            <p className="pf-note">This entry has no leaf in the chain{p.reason ? `: ${p.reason}` : ''}.
-              Entries recorded before the proof layer began on 2026-08-14 predate the daily roots; they are
-              in the books, and they are not in the chain. The page says so rather than implying otherwise.</p>
+            <p className="pf-note">
+              {p.explain || `This entry has no leaf in the chain${p.reason ? `: ${p.reason}` : ''}.`}
+              {p.chain_covers ? ` The chain covers ${p.chain_covers[0]} to ${p.chain_covers[1]}.` : ''}
+            </p>
           )}
           {!busy && p && p.found && (
             <dl className="pf-dl">
