@@ -1,0 +1,136 @@
+/* #4545 structural half — THE BOOKS PAGE.
+ *
+ * The honesty work landed and left the page 5,627px tall: eight sections of
+ * flat tables, with the reconciliation (the single most important thing here)
+ * reading as section two of eight. Same information, one third the height.
+ *
+ * EVERY class in this file carries the bk- prefix. organism.css loads globally
+ * from the root layout and owns the bare elements and the generic names
+ * (.vitals, .ledger, .folio, nav, h1-h6). #4528 was caused by forgetting that.
+ */
+
+/* ── the position band: what the books say, before how they say it ── */
+.bk-position {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin: 22px 0 6px;
+}
+.bk-pos-cell { background: var(--void-2); padding: 16px 18px; }
+.bk-pos-label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--bone-faint); display: block;
+}
+.bk-pos-value {
+  font-family: var(--serif); font-size: 27px; line-height: 1.15;
+  color: var(--bone); margin-top: 7px; display: block;
+}
+.bk-pos-value.bk-owed { color: var(--gold); }
+.bk-pos-note {
+  font-family: var(--mono); font-size: 11px; color: var(--bone-faint);
+  margin-top: 6px; display: block;
+}
+
+/* ── the reconciliation, as a waterfall ── */
+.bk-fall { margin: 10px 0 4px; }
+.bk-fall-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 14px; align-items: center;
+  padding: 7px 0; border-bottom: 1px solid var(--rule);
+}
+.bk-fall-row:last-child { border-bottom: 0; }
+.bk-fall-label {
+  font-size: 14px; color: var(--bone-dim); line-height: 1.35;
+}
+.bk-fall-row.bk-total .bk-fall-label,
+.bk-fall-row.bk-total .bk-fall-amt { color: var(--bone); font-weight: 600; }
+.bk-fall-row.bk-total { border-top: 1px solid var(--rule-strong); border-bottom: 0; padding-top: 11px; }
+.bk-bar {
+  height: 9px; margin-top: 6px; background: var(--void-3);
+  border: 1px solid var(--rule); position: relative; overflow: hidden;
+}
+.bk-bar span { position: absolute; top: 0; bottom: 0; display: block; }
+.bk-bar .bk-gross { left: 0; background: var(--bone-faint); }
+.bk-bar .bk-less  { background: var(--gold); opacity: .75; }
+.bk-bar .bk-kept  { left: 0; background: var(--life); opacity: .85; }
+.bk-fall-amt {
+  font-family: var(--mono); font-size: 14px; text-align: right;
+  color: var(--bone-dim); white-space: nowrap;
+}
+.bk-unexplained { color: var(--blood) !important; }
+
+/* ── one ledger, filtered ── */
+.bk-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 10px; }
+.bk-chip {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--bone-dim);
+  background: transparent; border: 1px solid var(--rule-strong);
+  padding: 6px 12px; cursor: pointer; border-radius: 2px;
+}
+.bk-chip:hover { color: var(--bone); border-color: var(--bone-faint); }
+.bk-chip[aria-pressed='true'] {
+  color: var(--void); background: var(--life); border-color: var(--life);
+}
+.bk-chip-n { opacity: .65; margin-left: 6px; }
+.bk-scroll { max-height: 440px; overflow-y: auto; border: 1px solid var(--rule); }
+.bk-scroll table { width: 100%; border-collapse: collapse; }
+.bk-scroll thead th {
+  position: sticky; top: 0; z-index: 1; background: var(--void-2);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--bone-faint);
+  text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule);
+}
+.bk-scroll tbody td {
+  padding: 9px 12px; font-size: 14px; color: var(--bone-dim);
+  border-bottom: 1px solid var(--rule); vertical-align: top;
+}
+.bk-scroll tbody tr:last-child td { border-bottom: 0; }
+.bk-scroll .bk-num { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.bk-scroll .bk-mono { font-family: var(--mono); font-size: 13px; }
+.bk-kind {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--bone-faint);
+  border: 1px solid var(--rule-strong); padding: 2px 6px; border-radius: 2px;
+}
+.bk-neg { color: var(--gold); }
+
+/* ── the proof chain, as a spine ── */
+.bk-spine { margin: 12px 0 4px; max-height: 340px; overflow-y: auto; padding-left: 4px; }
+.bk-day { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; }
+.bk-rail { position: relative; }
+.bk-rail::before {
+  content: ''; position: absolute; left: 50%; top: 20px; bottom: -8px;
+  width: 1px; background: var(--rule-strong); transform: translateX(-.5px);
+}
+.bk-day:last-child .bk-rail::before { display: none; }
+.bk-node {
+  width: 11px; height: 11px; margin: 6px auto 0; border-radius: 50%;
+  border: 1px solid var(--bone-faint); background: var(--void);
+}
+.bk-node.bk-anchored { background: var(--life); border-color: var(--life); }
+.bk-day-body { padding-bottom: 16px; min-width: 0; }
+.bk-day-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; }
+.bk-day-date { font-family: var(--mono); font-size: 14px; color: var(--bone); }
+.bk-day-meta { font-family: var(--mono); font-size: 12px; color: var(--bone-faint); }
+.bk-root { margin-top: 4px; font-family: var(--mono); font-size: 12px; word-break: break-all; }
+.bk-chainline {
+  font-family: var(--mono); font-size: 11px; color: var(--bone-faint); margin-top: 3px;
+}
+
+@media (max-width: 620px) {
+  .bk-pos-value { font-size: 22px; }
+  .bk-fall-row { grid-template-columns: minmax(0, 1fr) 84px; gap: 10px; }
+  .bk-scroll { max-height: 380px; }
+}
+
+/* the monthly statement is six rows of aggregate: it does not need the
+   full ledger's breathing room, and this page is fighting for height */
+.bk-months table th, .bk-months table td { padding: 6px 10px !important; font-size: 13px !important; }
+.bk-day-body { padding-bottom: 12px; }
+
+/* REC #312 clause 2: a check that could not run must not look like a check
+   that ran and found nothing. Broken reads red, not grey. */
+.bk-broken { color: var(--blood); }
