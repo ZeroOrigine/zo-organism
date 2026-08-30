@@ -399,3 +399,30 @@
   .cert .correction{margin-top:18px;border-left:2px solid var(--gold);padding:10px 14px;
     background:var(--void-2);color:var(--bone-dim);font-size:14px;line-height:1.7}
   .cert .correction b{color:var(--gold);font-weight:500;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+
+  /* #4545: the path from an entry to its proof */
+  .pf-btn{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--life);background:none;border:1px solid var(--rule-strong);border-radius:999px;
+    padding:4px 12px;cursor:pointer;white-space:nowrap}
+  .pf-btn:hover{border-color:var(--life)}
+  .pf-panel{margin:12px 0 4px;padding:14px 16px;background:var(--void-2);border:1px solid var(--rule);
+    border-left:2px solid var(--life);border-radius:3px}
+  .pf-note{font-size:13.5px;color:var(--bone-dim);margin:0;line-height:1.7}
+  .pf-dl{margin:0;display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 18px;align-items:baseline}
+  @media(max-width:700px){.pf-dl{grid-template-columns:1fr;gap:4px 0}.pf-dl dt{margin-top:10px}}
+  .pf-dl dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--bone-faint)}
+  .pf-dl dd{margin:0;font-size:13.5px;color:var(--bone);min-width:0}
+  .pf-dl code{font-family:var(--mono);font-size:11.5px;color:var(--life);word-break:break-all}
+  .pf-json{display:block;color:var(--bone-dim);line-height:1.6;max-height:150px;overflow:auto}
+  .pf-copy{display:inline-flex;align-items:baseline;gap:8px;flex-wrap:wrap;max-width:100%}
+  .pf-copy button{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--bone-faint);background:none;border:1px solid var(--rule);border-radius:2px;
+    padding:2px 7px;cursor:pointer}
+  .pf-copy button:hover{color:var(--life);border-color:var(--life)}
+  .pf-step{display:block;margin-bottom:4px}
+  .pf-recipe{display:block;font-family:var(--mono);font-size:10.5px;color:var(--bone-faint);margin-top:5px;
+    line-height:1.6;word-break:break-all}
+  .books-how{margin:14px 0 8px 20px;padding:0;color:var(--bone-dim);font-size:15px;line-height:1.9}
+  .books-how li{margin-bottom:8px}
+  .books-how code{font-family:var(--mono);font-size:12px;color:var(--life);word-break:break-all}

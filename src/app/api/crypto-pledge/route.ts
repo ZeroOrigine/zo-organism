@@ -10,7 +10,13 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const r = await fetch(`${RAILWAY}/donations/crypto-pledge`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: String(body?.name || '').slice(0, 120), asset: body?.asset === 'sol' ? 'sol' : 'usdc' }),
+      // #4543: the amount is what makes a memo-less deposit matchable without
+      // guessing, so it travels with the pledge when the donor gives it.
+      body: JSON.stringify({
+        name: String(body?.name || '').slice(0, 120),
+        asset: body?.asset === 'sol' ? 'sol' : 'usdc',
+        amount: Number.isFinite(Number(body?.amount)) && Number(body?.amount) > 0 ? Number(body.amount) : null,
+      }),
       cache: 'no-store',
     });
     const d = await r.json().catch(() => null);

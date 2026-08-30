@@ -4,12 +4,46 @@
 import Link from 'next/link';
 import { getBooksData } from '@/lib/siteState';
 import { Dual, CurrencyPicker } from '@/lib/currency';
+import ProofCell, { Copyable } from '@/components/ProofCell';
 import '@/app/organism.css';
 
 export const dynamic = 'force-dynamic';
 
+// #4545: the supporter ledger's own keys, read from the SAME public view the
+// machine's books endpoint reads (v_donations_public, is_test excluded), so
+// the table and its proof links cannot drift apart. donation_id is the key
+// /books/proof already answers on for anyone, with no credentials.
+async function donationKeys(): Promise<Record<string, string>> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return {};
+  try {
+    const r = await fetch(
+      `${url}/rest/v1/v_donations_public?select=donation_id,created_at,amount&order=created_at.desc&limit=200`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' });
+    if (!r.ok) return {};
+    const rows = (await r.json()) as
+      { donation_id: string; created_at: string; amount: number; donor_name: string | null }[];
+    // The books payload renders date + name + amount, so that triple keys a row
+    // back to its ledger id. Two rows CAN share it (there are already two $1.00
+    // donations on 2026-08-14), and showing a row its neighbour's proof would
+    // be exactly the dishonesty this fix exists to end — so a colliding key
+    // resolves to nothing and the row says the key is ambiguous.
+    const byKey: Record<string, string[]> = {};
+    for (const row of rows) {
+      const k = `${String(row.created_at).slice(0, 10)}|${row.donor_name || 'anonymous'}|$${Number(row.amount).toFixed(2)}`;
+      (byKey[k] ||= []).push(row.donation_id);
+    }
+    const out: Record<string, string> = {};
+    for (const [k, ids] of Object.entries(byKey)) if (ids.length === 1) out[k] = ids[0];
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 export default async function BooksPage() {
-  const data = await getBooksData();
+  const [data, keys] = await Promise.all([getBooksData(), donationKeys()]);
   if (!data) {
     return (
       <main className="cert">
@@ -88,7 +122,11 @@ export default async function BooksPage() {
               </tbody>
             </table></div>
             <p className="caveat">Itemized, newest first, no personal data. A negative amount is a reversal or refund and
-              names its reason.</p>
+              names its reason. <b>These recognition lines are not themselves leaves in the proof chain yet</b>: the
+              chain carries the cost, donation, credits, product, finding, verdict, rate and wage tables, and revenue
+              recognition joins it from the day that change ships. Saying so is cheaper than implying a proof that does
+              not exist; the money behind each line is provable today through the supporter ledger and the credits
+              statement below and above.</p>
           </>
         )}
 
@@ -110,16 +148,22 @@ export default async function BooksPage() {
 
         <h3 className="books-h">The supporter ledger</h3>
         <div className="ledger"><table>
-          <thead><tr><th>Date</th><th>Supporter</th><th className="num">Amount</th><th>Allocated to</th></tr></thead>
+          <thead><tr><th>Date</th><th>Supporter</th><th className="num">Amount</th><th>Allocated to</th><th>Proof</th></tr></thead>
           <tbody>
-            {data.donations.map((d, i) => (
-              <tr key={i}>
-                <td className="mono">{d.date}</td><td>{d.name}</td>
-                <td className="num">{d.amount}</td><td className="mono">{d.product}</td>
-              </tr>
-            ))}
+            {data.donations.map((d, i) => {
+              const id = keys[`${d.date}|${d.name}|${d.amount}`];
+              return (
+                <tr key={i}>
+                  <td className="mono">{d.date}</td><td>{d.name}</td>
+                  <td className="num">{d.amount}</td><td className="mono">{d.product}</td>
+                  <td>{id
+                    ? <ProofCell entryId={id} table="zo_donations" compact />
+                    : <span className="dimcell" title="two entries share this date, name and amount, so the page will not guess which proof belongs to this row">ask /books/proof</span>}</td>
+                </tr>
+              );
+            })}
             {data.donations.length === 0 && (
-              <tr><td colSpan={4} className="mono">No contributions yet. The ledger waits, honestly empty.</td></tr>
+              <tr><td colSpan={5} className="mono">No contributions yet. The ledger waits, honestly empty.</td></tr>
             )}
           </tbody>
         </table></div>
@@ -143,7 +187,7 @@ export default async function BooksPage() {
                 <tr key={p.day}>
                   <td className="mono">{p.day}</td>
                   <td className="num">{p.leaf_count}</td>
-                  <td className="mono">{p.chained_root.slice(0, 12)}&hellip;{p.chained_root.slice(-6)}</td>
+                  <td className="mono"><Copyable text={p.chained_root} label={`${p.day} chained root`} /></td>
                   <td>{p.solana_explorer
                     ? <a href={p.solana_explorer} rel="noopener noreferrer" target="_blank">verify on Solana</a>
                     : covering
@@ -158,6 +202,23 @@ export default async function BooksPage() {
           anchored on a public chain. Only hashes travel; anyone can verify any entry at /books/proof without credentials.
           On the explorer page, expand the transaction&apos;s first instruction: the memo carries the day and the root,
           in plain text.</p>
+
+        <h3 className="books-h">How to check any of this yourself</h3>
+        <ol className="books-how">
+          <li>Open <b>proof</b> on any supporter-ledger row above. The machine returns the exact bytes it hashed, the
+            hash, and the path of sibling hashes up to that day&apos;s root.</li>
+          <li>Recompute it: <code>sha256(&apos;&lt;table&gt;:&lt;id&gt;:&apos; + canonical_json)</code> must equal the
+            entry hash; hash each path pair sorted, in order, and you must land on the day&apos;s Merkle root.</li>
+          <li>Chain it: <code>sha256(prev_root + merkle_root + day)</code> must equal the chained root printed above,
+            which is copyable in full.</li>
+          <li>Compare it to the chain: open that day&apos;s anchor transaction and read the memo. It says{' '}
+            <code>zo-ledger:&lt;day&gt;:&lt;root&gt;</code>. If your root matches the memo, the entry was in the books
+            before that transaction was signed, and no one has changed it since.</li>
+          <li>Or call it directly, with no account and no permission:{' '}
+            <code>zo-langgraph-production-3c96.up.railway.app/books/proof?entry_id=&lt;id&gt;&amp;table=zo_donations</code>.</li>
+        </ol>
+        <p className="caveat">A number you cannot check is a number you have to trust. These are checkable, which is
+          the point of keeping them this way.</p>
 
         <Link className="viewall" href="/">back to the organism</Link>
       </section>
