@@ -6,6 +6,19 @@ on: [push, pull_request]
 jobs:
   nav-law-and-build:
     runs-on: ubuntu-latest
+    # #4506: the first two runs died at 'Collecting page data' — the legacy
+    # (app) template island's config validator reads six env vars at MODULE
+    # LOAD, and CI has none (Netlify and dev have real ones). These are
+    # BUILD-ONLY dummies: CI never serves a request, and no real secret may
+    # ever live here. The nav law itself had passed; the guard's own env was
+    # the bug (reading (a) of the finding).
+    env:
+      NEXT_PUBLIC_PROJECT_ID: ci-build-dummy
+      NEXT_PUBLIC_PROJECT_NAME: ci-build-dummy
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-build-dummy.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-dummy-anon
+      STRIPE_SECRET_KEY: ci-build-dummy-never-a-real-key
+      RESEND_API_KEY: ci-build-dummy-never-a-real-key
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
