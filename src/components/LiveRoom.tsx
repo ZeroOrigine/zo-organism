@@ -184,7 +184,8 @@ export default function LiveRoom() {
     // dim nodes across the full width and the founder could not read them.
     const stagePos = (i: number) => {
       const t = i / (STAGE_KEYS.length - 1);
-      return [cv.width * 0.19 + t * cv.width * 0.62, cv.height * 0.78 - Math.sin(t * Math.PI) * cv.height * 0.13] as const;
+      // FIX 2026-08-31: was 0.78, which put the stage labels on top of the feed.
+      return [cv.width * 0.19 + t * cv.width * 0.62, cv.height * 0.62 - Math.sin(t * Math.PI) * cv.height * 0.12] as const;
     };
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -268,12 +269,13 @@ export default function LiveRoom() {
           <div className="cn-eyebrow">
             {failed ? 'delivery room · a birth failed, honestly'
               : isLive ? ((d?.kind === 'research' || (!d?.kind && stageIdx <= 0)) ? 'delivery room · the minds are researching' : 'delivery room · a birth is in flight')
-              : 'delivery room · replay'}
+              : 'delivery room · a replay, not a live birth'}
           </div>
           <h1 className="cn-title">{title || (d ? '' : 'opening the room')}<span className="cursor" /></h1>
           <div className="cn-meters">
             {isLive && cost && <span>run <b>${Number(cost.run_usd ?? 0).toFixed(6)}</b></span>}
             {!isLive && d?.replay && <span>cost of birth <b>${d.replay.cost_usd.toFixed(2)}</b></span>}
+            {!isLive && d?.replay?.born && <span>born <b>{d.replay.born}</b></span>}
             {typeof d?.tokens?.run === 'number' && d.tokens.run > 0 &&
               <span>tokens <b>{d.tokens.run.toLocaleString()}</b></span>}
             {typeof elapsed === 'number' && isLive && <span>elapsed <b>{Math.floor(elapsed / 60)}h {elapsed % 60}m</b></span>}
@@ -283,6 +285,11 @@ export default function LiveRoom() {
           {showHw && <div className="cn-hw on">served by owned hardware · $0.000000</div>}
         </div>
 
+        {/* FIX 2026-08-31: the bar wraps to 3 rows on a narrow viewport and grew
+            upward into the feed, which was pinned at a fixed bottom offset that
+            could not know about it. One flex column now owns the bottom band, so
+            a wrapping bar pushes the feed instead of covering it. */}
+        <div className="cn-bottom">
         <div className="cn-feed" aria-live="polite">
           {calm && d && (
             <div className="cn-calmlist">
@@ -314,6 +321,7 @@ export default function LiveRoom() {
             </Link>
           )}
           <Link className="cn-btn" href="/sovereignty">the exam room</Link>
+        </div>
         </div>
 
         {certOpen && d?.replay && (

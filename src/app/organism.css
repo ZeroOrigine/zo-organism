@@ -279,6 +279,17 @@
   .galaxy .gx-plabel{position:absolute;z-index:5;pointer-events:none;font-size:12px;letter-spacing:.12em;color:var(--gx-dim);
     transform:translate(-50%,-140%);white-space:nowrap;text-transform:lowercase;transition:opacity .3s}
   .galaxy .gx-foot{bottom:24px;left:22px;font-size:12px;color:var(--gx-dim);letter-spacing:.08em;pointer-events:none}
+  /* FIX 2026-08-31: three.js is only imported after DESCEND is pressed, so the
+     screen went pure black for several seconds with nothing on it. */
+  .galaxy .gx-loading{position:absolute;inset:0;z-index:19;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 24px;pointer-events:none}
+  .galaxy .gx-loading .lead{font-family:var(--serif);font-size:clamp(20px,3.4vw,30px);color:var(--gx-bone);line-height:1.2}
+  .galaxy .gx-loading .sub{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--gx-green)}
+  .galaxy .gx-loading .track{width:min(280px,70vw);height:2px;background:#16241d;overflow:hidden;border-radius:2px}
+  .galaxy .gx-loading .track i{display:block;height:100%;width:38%;background:var(--gx-green);
+    animation:gxsweep 1.15s ease-in-out infinite}
+  @keyframes gxsweep{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+  @media(prefers-reduced-motion:reduce){.galaxy .gx-loading .track i{animation:none;width:100%}}
   .galaxy .gx-intro{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
     background:rgba(4,7,10,.72);backdrop-filter:blur(3px)}
   .galaxy .gx-intro .box{text-align:center;max-width:540px;padding:0 24px}
@@ -323,7 +334,13 @@
   .cinema .cn-meters{display:flex;gap:24px;justify-content:center;font-size:13px;color:#8d978f;margin-top:6px;flex-wrap:wrap}
   .cinema .cn-meters b{color:#e8e4d6;font-weight:500;font-variant-numeric:tabular-nums}
   .cinema .cn-hw{display:inline-block;margin-top:14px;padding:5px 14px;border:1px solid #3bda8c;border-radius:999px;color:#3bda8c;font-size:12px;letter-spacing:.18em;text-transform:uppercase}
-  .cinema .cn-feed{position:absolute;z-index:10;left:50%;bottom:150px;transform:translateX(-50%);width:min(780px,90vw);font-size:13px;line-height:2;color:#8d978f;text-align:center;min-height:66px}
+  /* FIX 2026-08-31: the feed and the button bar were both absolutely positioned
+     at fixed offsets from the bottom. The bar wraps to three rows on a narrow
+     viewport, grows upward and covered the log. One flex column now owns the
+     bottom band, so the bar can never sit on top of the text. */
+  .cinema .cn-bottom{position:absolute;z-index:10;left:50%;bottom:24px;transform:translateX(-50%);
+    width:min(780px,92vw);display:flex;flex-direction:column;align-items:center;gap:20px}
+  .cinema .cn-feed{position:static;transform:none;width:100%;font-size:13px;line-height:2;color:#8d978f;text-align:center;min-height:66px}
   .cinema .cn-feed .ln{opacity:0;animation:cnrise .8s forwards}
   .cinema .cn-feed .ln b{color:#e8e4d6;font-weight:500}
   .cinema .cn-feed .t{color:#3bda8c}
@@ -331,7 +348,7 @@
   @keyframes cnrise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .cinema .cn-calmlist{text-align:left;font-size:13px;line-height:1.9}
   .cinema .cn-calmlist .t{color:#3bda8c;margin-right:6px}
-  .cinema .cn-bar{position:absolute;z-index:10;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;background:rgba(10,18,16,.85);border:1px solid #1b2822;border-radius:999px;padding:8px 16px;backdrop-filter:blur(6px);flex-wrap:wrap;justify-content:center}
+  .cinema .cn-bar{position:static;transform:none;z-index:10;display:flex;gap:10px;align-items:center;background:rgba(10,18,16,.85);border:1px solid #1b2822;border-radius:999px;padding:8px 16px;backdrop-filter:blur(6px);flex-wrap:wrap;justify-content:center}
   .cinema .cn-bar button,.cinema .cn-btn{background:none;border:1px solid #1b2822;color:#e8e4d6;font-family:var(--mono);font-size:13px;border-radius:999px;padding:7px 16px;cursor:pointer;letter-spacing:.1em;transition:.2s;text-decoration:none}
   .cinema .cn-bar button:hover,.cinema .cn-btn:hover{border-color:#3bda8c;color:#3bda8c;text-decoration:none}
   .cinema .cn-certwrap{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(5,8,7,.78);backdrop-filter:blur(4px)}
@@ -352,7 +369,8 @@
   .cinema .cn-cert .seal{width:34px;height:34px;border:1.5px solid #3bda8c;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#3bda8c;font-family:var(--serif);font-size:15px}
   .cinema .cn-cert .note{font-size:10px;color:#8d978f;letter-spacing:.12em;text-transform:uppercase;text-align:right;line-height:1.7}
   .cinema .cn-cert .close{position:absolute;top:10px;right:14px;background:none;border:none;color:#8d978f;font-size:20px;cursor:pointer}
-  @media(max-width:640px){.cinema .cn-feed{bottom:110px}.cinema .cn-center{top:30%}}
+  @media(max-width:640px){.cinema .cn-center{top:26%}.cinema .cn-bottom{gap:14px}
+    .cinema .cn-feed{font-size:12px;line-height:1.85}}
 
   /* #308 C5: the permanent certificate page */
   .birthcert{width:min(480px,94vw);background:linear-gradient(175deg,#0d1512,#080f0c);border:1px solid #2a3c33;border-radius:8px;padding:36px 38px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(59,218,140,.07);font-family:var(--mono);color:#e8e4d6}

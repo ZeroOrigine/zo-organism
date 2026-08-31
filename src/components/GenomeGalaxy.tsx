@@ -58,10 +58,14 @@ export default function GenomeGalaxy({ data }: { data: GalaxyData }) {
   const [dot, setDot] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speedLabel, setSpeedLabel] = useState('1x');
+  // FIX 2026-08-31: three.js is imported only after DESCEND, so there were several
+  // seconds of pure black with no sign the page was working. Show the wait.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!entered || !stageRef.current || !data) return;
     let disposed = false;
+    setReady(false);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let cleanup: (() => void) | undefined;
 
@@ -341,7 +345,10 @@ export default function GenomeGalaxy({ data }: { data: GalaxyData }) {
         }
         renderer.render(scene, camera);
       }
-      applyRig(); raf = requestAnimationFrame(frame);
+      applyRig();
+      renderer.render(scene, camera);   // paint frame one before we call it ready
+      setReady(true);
+      raf = requestAnimationFrame(frame);
       const onResize = () => {
         camera.aspect = W() / H(); camera.updateProjectionMatrix(); renderer.setSize(W(), H());
       };
@@ -414,6 +421,14 @@ export default function GenomeGalaxy({ data }: { data: GalaxyData }) {
             <p className="gx-lock">🔒 full doc · code · harvest findings are supporter access.{' '}
               <Link href="/#support">become a supporter</Link> · <Link href="/library">already one? the library</Link></p>
           )}
+        </div>
+      )}
+
+      {entered && !ready && (
+        <div className="gx-loading" role="status" aria-live="polite">
+          <div className="sub">building the galaxy</div>
+          <div className="lead">{c.modules} genes are being placed in orbit</div>
+          <div className="track"><i /></div>
         </div>
       )}
 
