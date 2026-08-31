@@ -70,6 +70,28 @@
   .ledger tr:last-child td{border-bottom:none}
   .ledger .num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
   .ledger .mono{font-family:var(--mono);font-size:13px;white-space:nowrap}
+  /* FIX 2026-08-31 (#4742): the registry table is 680px wide inside an
+     overflow-x container. On a phone that means the category is clipped
+     mid-word and cost and status are off-screen with nothing saying so.
+     Under 640px each row becomes a card that names its own values, so
+     nothing is hidden and there is no sideways scroll to discover. */
+  @media(max-width:640px){
+    .ledger{border:none;background:none;overflow-x:visible}
+    .ledger table{min-width:0;width:100%;display:block}
+    .ledger thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+    .ledger tbody{display:block}
+    .ledger tr{display:block;border:1px solid var(--rule-strong);background:var(--void-2);
+      padding:4px 0;margin-bottom:12px}
+    .ledger td{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+      border-bottom:1px solid var(--rule);padding:9px 14px;text-align:left;font-size:14px}
+    .ledger tr td:last-child{border-bottom:none}
+    .ledger td.num{text-align:left;white-space:normal}
+    .ledger td::before{content:attr(data-label);font-family:var(--mono);font-size:11px;
+      letter-spacing:.12em;text-transform:uppercase;color:var(--bone-faint);flex:0 0 auto}
+    .ledger td:not([data-label])::before{content:none}
+    .ledger td[colspan]{display:block;text-align:center}
+  }
+
   .stamp{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:1.2px;padding:3px 9px;border:1px solid currentColor;border-radius:2px;text-transform:uppercase;white-space:nowrap}
   .stamp.ship{color:var(--life)} .stamp.dead{color:var(--blood)} .stamp.hold{color:var(--gold)}
   .caveat{font-family:var(--mono);font-size:13px;color:var(--bone-faint);margin-top:12px;line-height:1.7}

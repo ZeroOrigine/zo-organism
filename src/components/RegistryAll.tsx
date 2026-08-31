@@ -54,12 +54,12 @@ export default function RegistryAll({ products }: { products: SiteProduct[] }) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.slug}>
-                <td className="mono">{p.born}</td>
-                <td><Link href={'/product/' + p.slug}>{p.name}</Link></td>
-                <td className="mono">{p.cat}</td>
-                <td className="num">{p.cost === 'pre-attribution'
+                <td className="mono" data-label="Born">{p.born}</td>
+                <td data-label="Product"><Link href={'/product/' + p.slug}>{p.name}</Link></td>
+                <td className="mono" data-label="Category">{p.cat}</td>
+                <td className="num" data-label="Cost of birth">{p.cost === 'pre-attribution'
                   ? <span style={{ color: 'var(--bone-faint)' }}>pre-attribution</span> : p.cost}</td>
-                <td><span className={'stamp ' + p.stamp[0]}>{p.stamp[1]}</span>
+                <td data-label="Status"><span className={'stamp ' + p.stamp[0]}>{p.stamp[1]}</span>
                   {p.slug.startsWith('exam-') && (
                     <span className="stamp hold" title="built entirely by open models on the machine's own hardware"> BORN IN EXAMINATION</span>
                   )}</td>

@@ -82,8 +82,17 @@ export function useWindowStatus(): WindowStatus | null {
       } catch { /* keep last known; the board shows UNREADABLE, never invents */ }
     };
     load();
-    const t = setInterval(load, 60000);
-    return () => clearInterval(t);
+    // FIX 2026-08-31 (#4710): every open tab polled the birth door once a minute,
+    // and the door wrote a refusal row for each read. The endpoint no longer
+    // writes, but a background tab has no business asking at all. Five minutes,
+    // and only while the page is actually being looked at.
+    let t: ReturnType<typeof setInterval> | null = null;
+    const start = () => { if (t === null) t = setInterval(load, 300000); };
+    const stop = () => { if (t !== null) { clearInterval(t); t = null; } };
+    const onVis = () => { if (document.visibilityState === 'visible') { load(); start(); } else stop(); };
+    if (document.visibilityState === 'visible') start();
+    document.addEventListener('visibilitychange', onVis);
+    return () => { stop(); document.removeEventListener('visibilitychange', onVis); };
   }, []);
   return w;
 }
