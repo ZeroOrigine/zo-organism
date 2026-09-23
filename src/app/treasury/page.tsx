@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import SubNav from '@/components/SubNav';
 import type { Metadata } from 'next';
 import { createPublicClient } from '@/lib/supabase/public';
 import { getTreasury } from '@/lib/zo';
@@ -109,7 +108,6 @@ export default async function TreasuryPage({
 
   return (
     <div className="v4" style={{ minHeight: '100vh' }}>
-      <SubNav />
       <main className="wrap" style={{ paddingTop: 40, paddingBottom: 80 }}>
         <div className="eyebrow">The treasury</div>
         <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 34, margin: '12px 0 10px' }}>

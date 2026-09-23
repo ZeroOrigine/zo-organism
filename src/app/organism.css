@@ -36,7 +36,10 @@
   nav .links{display:flex;gap:18px;margin-left:auto;overflow-x:auto;-webkit-overflow-scrolling:touch}
   nav .links a{font-family:var(--mono);font-size:13px;letter-spacing:1.1px;color:var(--bone-dim);text-transform:uppercase;white-space:nowrap}
   nav .links a:hover{color:var(--life);text-decoration:none}
-  main{opacity:0;transition:opacity 1s ease} main.alive{opacity:1}
+  /* 2026-09-23: the birth fade belongs to the home page's <main id="page"> ONLY. As a bare
+     `main` rule it hid every legacy page that did not defend itself with style=opacity:1
+     (/privacy /terms /contact /join /refund /logbook /story rendered as black screens). */
+  main#page{opacity:0;transition:opacity 1s ease} main#page.alive{opacity:1}
 
   section{max-width:1060px;margin:0 auto;padding:88px 24px 26px}
   .folio{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--rule-strong);padding-bottom:10px;margin-bottom:30px;flex-wrap:wrap}

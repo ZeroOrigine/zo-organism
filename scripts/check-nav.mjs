@@ -5,7 +5,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = decodeURIComponent(new URL('..', import.meta.url).pathname);
 const fail = (msg) => { console.error(`NAV LAW FAIL: ${msg}`); process.exitCode = 1; };
 
 // 1) the canonical list lives in SiteNav and every route in it must exist
@@ -34,7 +34,17 @@ for (const f of walk(join(ROOT, 'src'))) {
   if (f.endsWith('components/SiteNav.tsx')) continue;
   const s = readFileSync(f, 'utf8');
   if (s.includes('aria-label="Primary"')) fail(`${f.replace(ROOT, '')} renders a page-local primary nav`);
+  // 2026-09-23: SubNav ("Registry / Logbook / Join Us") sat under this check for a month
+  // because it was labelled "Site navigation", and seven pages rendered TWO navs. Any
+  // <nav element outside SiteNav, Footer and the (app) template island's Header (which
+  // 404s on the public site) is a page-local nav, whatever it calls itself.
+  if (!/components\/(Footer|Header)\.tsx$/.test(f) && /<nav[\s>]/.test(s)) fail(`${f.replace(ROOT, '')} renders a <nav> outside SiteNav`);
 }
+
+// 4) the home page's birth fade may never be a bare `main` rule again: /privacy, /terms,
+// /contact, /join, /refund, /logbook and /story rendered as black screens under it.
+const organism = readFileSync(join(ROOT, 'src/app/organism.css'), 'utf8');
+if (/(^|[\s}])main\s*\{[^}]*opacity\s*:\s*0/.test(organism)) fail('organism.css fades a bare <main>; the birth fade must be scoped to main#page');
 
 if (process.exitCode) process.exit(1);
 console.log(`nav law: 1 primary nav (SiteNav), ${links.length} canonical routes all present, 0 page-local navs`);

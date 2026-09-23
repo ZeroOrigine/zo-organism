@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import SubNav from '@/components/SubNav';
 import type { Metadata } from 'next';
 import { getStory } from '@/lib/zo';
 
@@ -31,7 +30,6 @@ export default async function StoryPage({ params }: { params: { slug: string } }
 
   return (
     <>
-    <SubNav />
     <main className="legal-page mc-story">
       <div className="zo-container">
         <Link href="/products" className="legal-back">&larr; Registry</Link>

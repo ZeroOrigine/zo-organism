@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import SubNav from '@/components/SubNav';
 import type { Metadata } from 'next';
 import { getLogbook, type LogEntry } from '@/lib/zo';
 
@@ -31,7 +30,6 @@ export default async function LogbookPage() {
 
   return (
     <>
-      <SubNav />
       <main className="legal-page zo-logbook">
         <div className="zo-container">
           <Link href="/" className="legal-back">&larr; Back to mission control</Link>

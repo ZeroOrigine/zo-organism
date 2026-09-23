@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import SubNav from '@/components/SubNav';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <>
-    <SubNav />
     <main className="legal-page">
       <div className="zo-container">
         <Link href="/" className="legal-back">&larr; Back to ZeroOrigine</Link>
