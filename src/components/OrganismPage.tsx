@@ -397,8 +397,9 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       ro.textContent = t.slug + ' · ' + (t.hold ? 'under review, tethered until its findings clear' : 'in the genome, inherited by every later birth') + ' · family ' + FAMILIES[t.fam][0];
     };
     const nearest = (mx: number, my: number) => {
-      let best = -1; let bd = 14 * 14;
-      ticks.forEach((t, i) => { const dx = t.x - mx; const dy = (t.y - my) * 0.6; const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } });
+      // a tick is 2px wide; the hit target is the band's full height and half the gap to its neighbour
+      let best = -1; let bd = 18 * 18;
+      ticks.forEach((t, i) => { if (Math.abs(t.y - my) > 16) return; const dx = t.x - mx; const d = dx * dx; if (d < bd) { bd = d; best = i; } });
       return best;
     };
     const onGMove = (ev: MouseEvent) => {
@@ -542,7 +543,8 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
           <div className="folio"><span className="no">FOLIO 04</span><h2>The genome</h2><span className="note">what the dead teach the unborn</span></div>
           <p style={{ maxWidth: '62ch', color: 'var(--bone-dim)', marginBottom: 22, fontSize: 18 }}>
             Proven code and hard lessons are harvested as genes. A gene extracted from one product flows into every
-            product born after it. Touch the network: genes in green, products in bone, connections are inheritance.</p>
+            product born after it. Each tick is one gene on its family band; the row beneath is the latest births.
+            Touch a tick and its inheritance lights up.</p>
           <canvas id="genome-net" ref={geneCv} />
           <div className="gene-legend" ref={geneReadout} aria-live="polite" />
           <div className="gene-legend"><span className="g">▮ gene in the genome</span> &nbsp; <span className="b">▮ gene under review</span> &nbsp; <span className="p">● product</span> &nbsp; · one tick per gene, grouped by family; the readout above names what you touch</div>
