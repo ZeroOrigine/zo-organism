@@ -90,6 +90,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
   const heroCv = useRef<HTMLCanvasElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const geneCv = useRef<HTMLCanvasElement>(null);
+  const geneReadout = useRef<HTMLDivElement>(null);
 
   // W7: home is a PREVIEW. The latest births and genes render here; the full
   // registries live on /products and /genes, built for hundreds of rows.
@@ -289,145 +290,132 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
     return () => { stopped = true; cancelAnimationFrame(raf); cv.removeEventListener('mousemove', onMove); cv.removeEventListener('mouseleave', onLeave); window.removeEventListener('resize', onResize); };
   }, [state.products]);
 
-  // ---------- the genome network ----------
+  // ---------- the genome: THE CHROMOSOME ----------
+  // 2026-09-23. The previous drawing was a force simulation that placed a text
+  // label on every gene; at 50 genes the labels collided into noise and at
+  // 300 the folio was unreadable (founder: "definitely not scalable"). A label
+  // needs pixels, a gene does not. So: genes are TICKS on family bands
+  // (sorted, evenly spaced, no text on the canvas), products are fixed slots on
+  // one row, and the only text is ONE readout line under the canvas that names
+  // whatever the pointer is on. Past ~one tick per 3px a band becomes a density
+  // strip and still reads by position. Nothing can overlap at any count.
   useEffect(() => {
-    const gn = geneCv.current; if (!gn) return;
+    const gn = geneCv.current; const ro = geneReadout.current; if (!gn || !ro) return;
     const gx = gn.getContext('2d'); if (!gx) return;
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const DPR = Math.min(2, window.devicePixelRatio || 1);
-    let GW = 0; let GH = 0; let raf = 0; let stopped = false; let gsel = -1; let psel = -1;
-    // #298 T3: the simulation carries HEAT that cools to zero in ~4s, and
-    // every force is scaled by it — the network settles to stillness instead
-    // of boiling forever. Interaction re-warms it briefly.
-    let heat = 1;
-    interface GN { t: 'gene' | 'prod'; n: string; hold?: boolean; x: number; y: number; vx: number; vy: number }
-    let gnodes: GN[] = []; let glinks: Array<{ a: number; b: number; held?: boolean }> = [];
-    const genes = state.genes; const prods = state.products.slice(0, 10);
+    let GW = 0; let GH = 0; let raf = 0; let stopped = false;
+    const FAMILIES: Array<[string, RegExp]> = [
+      ['launch', /^launch-/], ['qa', /^qa-/], ['ref', /^ref-/], ['mech', /^mech-/], ['core', /./],
+    ];
+    interface Tick { slug: string; hold: boolean; fam: number; x: number; y: number }
+    interface Slot { name: string; x: number; y: number }
+    let ticks: Tick[] = []; let slots: Slot[] = []; let bands: Array<{ name: string; y: number; n: number; dense: boolean }> = [];
+    let sel = -1; let hov = -1; let pulse = 0;
+    const genes = [...state.genes].sort((p, q) => p.slug.localeCompare(q.slug));
+    const prods = state.products.slice(0, 10);
     const gsize = () => { GW = gn.clientWidth; GH = gn.clientHeight; gn.width = GW * DPR; gn.height = GH * DPR; gx.setTransform(DPR, 0, 0, DPR, 0, 0); };
     const gbuild = () => {
-      gnodes = []; glinks = [];
-      genes.forEach((g, i) => {
-        const fx = genes.length > 1 ? 0.2 + (0.6 * i) / (genes.length - 1) : 0.5;
-        gnodes.push({ t: 'gene', n: g.slug, hold: g.status[0] === 'hold', x: GW * fx, y: GH * 0.32, vx: 0, vy: 0 });
+      ticks = []; slots = []; bands = [];
+      const grouped: Tick[][] = FAMILIES.map(() => []);
+      genes.forEach((g) => {
+        const fi = FAMILIES.findIndex(([, re]) => re.test(g.slug));
+        grouped[fi].push({ slug: g.slug, hold: g.status[0] === 'hold', fam: fi, x: 0, y: 0 });
       });
-      prods.forEach((p, i) => {
-        const idx = gnodes.length;
-        gnodes.push({ t: 'prod', n: p.name, x: GW * (0.08 + 0.09 * i), y: GH * (0.68 + ((i % 3) * 0.09)), vx: 0, vy: 0 });
-        genes.forEach((g, gi) => { glinks.push({ a: gi, b: idx, held: g.status[0] === 'hold' }); });
+      const present = grouped.map((t, i) => ({ t, i })).filter((f) => f.t.length > 0);
+      const left = GW < 760 ? 58 : 92; const right = GW - 40; const span = right - left;
+      const top = 26; const rowH = Math.min(46, (GH * 0.64) / Math.max(1, present.length));
+      present.forEach((f, r) => {
+        const y = top + r * rowH + rowH / 2;
+        const n = f.t.length; const gap = n > 1 ? span / (n - 1) : 0;
+        const dense = n > span / 3;
+        bands.push({ name: FAMILIES[f.i][0], y, n, dense });
+        f.t.forEach((t, k) => { t.x = n > 1 ? left + k * gap : left + span / 2; t.y = y; ticks.push(t); });
       });
+      const py = GH - 34; const pw = span / Math.max(1, prods.length);
+      prods.forEach((p, i) => slots.push({ name: p.name, x: left + pw * i + pw / 2, y: py }));
+    };
+    const ellipsize = (txt: string, max: number) => {
+      if (gx.measureText(txt).width <= max) return txt;
+      let t = txt; while (t.length > 2 && gx.measureText(t + '…').width > max) t = t.slice(0, -1);
+      return t + '…';
     };
     const gdraw = () => {
       if (stopped) return;
       gx.clearRect(0, 0, GW, GH);
-      for (let i = 0; i < gnodes.length; i++) {
-        for (let j = i + 1; j < gnodes.length; j++) {
-          const a = gnodes[i]; const b = gnodes[j];
-          const dx = b.x - a.x; const dy = b.y - a.y; const d2 = dx * dx + dy * dy || 1;
-          // W9: gene-gene pairs repel harder and from further away, because
-          // each gene carries a text label that must stay readable at rest
-          const geneair = a.t === 'gene' && b.t === 'gene';
-          const reach = geneair ? 16000 : 5200;
-          const power = (geneair ? 110 : 28) * heat;
-          if (d2 < reach) { const f = power / d2; a.vx -= dx * f; a.vy -= dy * f; b.vx += dx * f; b.vy += dy * f; }
-        }
-      }
-      glinks.forEach((l) => {
-        const a = gnodes[l.a]; const b = gnodes[l.b];
-        const dx = b.x - a.x; const dy = b.y - a.y; const d = Math.sqrt(dx * dx + dy * dy) || 1; const f = (d - 110) * 0.0006 * heat;
-        a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
+      pulse = rm ? 1 : 0.85 + Math.abs(Math.sin(Date.now() * 0.0016)) * 0.15;
+      const left = GW < 760 ? 58 : 92; const right = GW - 40;
+      // bands
+      gx.font = '12px IBM Plex Mono, monospace'; gx.textAlign = 'right'; gx.textBaseline = 'middle';
+      bands.forEach((b) => {
+        gx.strokeStyle = 'rgba(233,228,214,.10)'; gx.lineWidth = 1;
+        gx.beginPath(); gx.moveTo(left, b.y); gx.lineTo(right, b.y); gx.stroke();
+        gx.fillStyle = 'rgba(233,228,214,.55)'; gx.fillText(b.name, left - 10, b.y);
+        gx.textAlign = 'left'; gx.fillStyle = 'rgba(233,228,214,.35)'; gx.fillText(String(b.n), right + 6, b.y); gx.textAlign = 'right';
       });
-      heat = Math.max(0, heat - 1 / 240);
-      gnodes.forEach((n) => {
-        // #298 T3: heavy damping + a hard speed cap — ambient motion reads as
-        // breathing, never boiling
-        n.vx *= 0.6; n.vy *= 0.6;
-        const sp = Math.hypot(n.vx, n.vy);
-        if (sp > 1.2) { n.vx *= 1.2 / sp; n.vy *= 1.2 / sp; }
-        n.x += n.vx; n.y += n.vy;
-        n.x = Math.max(30, Math.min(GW - 30, n.x)); n.y = Math.max(24, Math.min(GH - 24, n.y));
-      });
-      // W9: HARD separation between gene nodes. Two genes linked to the same
-      // products are pulled to the same centroid, and no spring tuning wins
-      // that fight forever — so after integration, gene pairs closer than
-      // 70px are pushed apart to exactly 70px along their axis.
-      const MIN_GENE_GAP = Math.min(90, GW / 4);
-      for (let i = 0; i < gnodes.length; i++) {
-        for (let j = i + 1; j < gnodes.length; j++) {
-          const a = gnodes[i]; const b = gnodes[j];
-          if (a.t !== 'gene' || b.t !== 'gene') continue;
-          let dx = b.x - a.x; let dy = b.y - a.y;
-          let d = Math.sqrt(dx * dx + dy * dy);
-          if (d >= MIN_GENE_GAP) continue;
-          if (d < 1) { dx = 1; dy = 0; d = 1; }
-          const push = (MIN_GENE_GAP - d) / 2;
-          a.x -= (dx / d) * push; a.y -= (dy / d) * push;
-          b.x += (dx / d) * push; b.y += (dy / d) * push;
-          a.x = Math.max(30, Math.min(GW - 30, a.x)); a.y = Math.max(24, Math.min(GH - 24, a.y));
-          b.x = Math.max(30, Math.min(GW - 30, b.x)); b.y = Math.max(24, Math.min(GH - 24, b.y));
-        }
-      }
-      glinks.forEach((l) => {
-        const a = gnodes[l.a]; const b = gnodes[l.b];
-        const lit = gsel >= 0 && l.a === gsel;
-        // #296 T6(a): a held gene is TETHERED, dashed — held, not orphaned
-        gx.setLineDash(l.held ? [3, 5] : []);
-        gx.strokeStyle = lit ? 'rgba(61,255,158,.5)'
-          : l.held ? 'rgba(232,180,76,.22)' : 'rgba(233,228,214,.10)';
-        gx.lineWidth = lit ? 1.4 : 1;
-        gx.beginPath(); gx.moveTo(a.x, a.y); gx.lineTo(b.x, b.y); gx.stroke();
+      // inheritance: only for the selected (or hovered) gene, to every product slot
+      const focus = sel >= 0 ? sel : hov;
+      if (focus >= 0) {
+        const t = ticks[focus];
+        slots.forEach((s) => {
+          gx.setLineDash(t.hold ? [3, 5] : []);
+          gx.strokeStyle = t.hold ? 'rgba(232,180,76,.45)' : 'rgba(61,255,158,.45)'; gx.lineWidth = 1;
+          gx.beginPath(); gx.moveTo(t.x, t.y); gx.lineTo(s.x, s.y); gx.stroke();
+        });
         gx.setLineDash([]);
-      });
-      gnodes.forEach((n, i) => {
-        if (n.t === 'gene') {
-          gx.fillStyle = n.hold ? '#E8B44C' : '#3DFF9E';
-          gx.beginPath(); gx.arc(n.x, n.y, gsel === i ? 8 : 6, 0, 7); gx.fill();
-          gx.fillStyle = 'rgba(233,228,214,.9)'; gx.font = '13px IBM Plex Mono, monospace'; gx.textAlign = 'center';
-          // W9: when another gene sits within 140px (long slugs run ~130px of
-          // 13px mono after the T4 type pass), this label drops BELOW its node so
-          // never overprint into noise even at mobile widths
-          const crowded = gnodes.some((m, j) => j < i && m.t === 'gene'
-            && (m.x - n.x) ** 2 + (m.y - n.y) ** 2 < 140 * 140);
-          gx.fillText(n.n, n.x, crowded ? n.y + 22 : n.y - 14);
+      }
+      // ticks (or density strips)
+      bands.forEach((b) => {
+        const mine = ticks.filter((t) => t.y === b.y);
+        if (b.dense) {
+          const g = gx.createLinearGradient(left, 0, right, 0);
+          g.addColorStop(0, 'rgba(61,255,158,.55)'); g.addColorStop(1, 'rgba(61,255,158,.55)');
+          gx.fillStyle = g; gx.fillRect(left, b.y - 5, right - left, 10);
+          mine.forEach((t) => { if (t.hold) { gx.fillStyle = 'rgba(232,180,76,.9)'; gx.fillRect(t.x - 1, b.y - 6, 2, 12); } });
         } else {
-          const on = psel === i;
-          gx.fillStyle = on ? 'rgba(233,228,214,.95)' : 'rgba(233,228,214,.5)';
-          gx.beginPath(); gx.arc(n.x, n.y, on ? 4.6 : 3.4, 0, 7); gx.fill();
-          if (on) {
-            gx.fillStyle = 'rgba(233,228,214,.95)'; gx.font = '13px IBM Plex Mono, monospace'; gx.textAlign = 'center';
-            gx.fillText(n.n, n.x, n.y - 12);
-          }
+          mine.forEach((t) => {
+            const on = ticks.indexOf(t) === focus;
+            const h = on ? 14 : 9;
+            gx.fillStyle = t.hold ? (on ? '#F2C56A' : 'rgba(232,180,76,.85)') : (on ? '#7CFFBF' : 'rgba(61,255,158,' + 0.75 * pulse + ')');
+            gx.fillRect(t.x - (on ? 1.5 : 1), t.y - h / 2, on ? 3 : 2, h);
+          });
         }
+      });
+      // product slots
+      gx.textAlign = 'center'; gx.font = '12px IBM Plex Mono, monospace';
+      const pw = (right - left) / Math.max(1, slots.length);
+      slots.forEach((s) => {
+        gx.fillStyle = 'rgba(233,228,214,.6)'; gx.beginPath(); gx.arc(s.x, s.y, 3.4, 0, 7); gx.fill();
+        gx.fillStyle = 'rgba(233,228,214,.55)'; gx.fillText(ellipsize(s.name, pw - 8), s.x, s.y + 16);
       });
       if (!rm) raf = requestAnimationFrame(gdraw);
     };
-    const onClick = (ev: MouseEvent) => {
-      // #296 T6(c): a tap names what it touches — genes trace their children,
-      // product dots show their name (this is the touch path too: taps arrive
-      // as clicks on mobile)
-      const r = gn.getBoundingClientRect(); const mx = ev.clientX - r.left; const my = ev.clientY - r.top;
-      let hit = -1; let phit = -1;
-      gnodes.forEach((n, i) => {
-        const d = (n.x - mx) ** 2 + (n.y - my) ** 2;
-        if (n.t === 'gene' && d < 400) hit = i;
-        if (n.t === 'prod' && d < 300) phit = i;
-      });
-      gsel = hit === gsel ? -1 : hit;
-      psel = phit === psel ? -1 : phit;
-      heat = Math.max(heat, 0.35); // a touch stirs it, briefly
-      if (rm) gdraw();
+    const readout = () => {
+      const i = sel >= 0 ? sel : hov;
+      if (i < 0) { ro.textContent = 'hover or tap a tick to read the gene · a selected gene lights its inheritance into every product born after it'; return; }
+      const t = ticks[i];
+      ro.textContent = t.slug + ' · ' + (t.hold ? 'under review, tethered until its findings clear' : 'in the genome, inherited by every later birth') + ' · family ' + FAMILIES[t.fam][0];
+    };
+    const nearest = (mx: number, my: number) => {
+      let best = -1; let bd = 14 * 14;
+      ticks.forEach((t, i) => { const dx = t.x - mx; const dy = (t.y - my) * 0.6; const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } });
+      return best;
     };
     const onGMove = (ev: MouseEvent) => {
-      const r = gn.getBoundingClientRect(); const mx = ev.clientX - r.left; const my = ev.clientY - r.top;
-      let phit = -1;
-      gnodes.forEach((n, i) => { if (n.t === 'prod' && (n.x - mx) ** 2 + (n.y - my) ** 2 < 300) phit = i; });
-      if (phit !== psel) { psel = phit; if (rm) gdraw(); }
-      gn.style.cursor = phit >= 0 || gnodes.some((n, i) => n.t === 'gene' && (n.x - mx) ** 2 + (n.y - my) ** 2 < 400) ? 'pointer' : 'default';
+      const r = gn.getBoundingClientRect(); const h = nearest(ev.clientX - r.left, ev.clientY - r.top);
+      if (h !== hov) { hov = h; readout(); if (rm) gdraw(); }
+      gn.style.cursor = h >= 0 ? 'pointer' : 'default';
     };
+    const onClick = (ev: MouseEvent) => {
+      const r = gn.getBoundingClientRect(); const h = nearest(ev.clientX - r.left, ev.clientY - r.top);
+      sel = h === sel ? -1 : h; readout(); if (rm) gdraw();
+    };
+    const onLeave = () => { hov = -1; readout(); if (rm) gdraw(); };
     const onResize = () => { gsize(); gbuild(); if (rm) gdraw(); };
-    gn.addEventListener('click', onClick); gn.addEventListener('mousemove', onGMove);
+    gn.addEventListener('click', onClick); gn.addEventListener('mousemove', onGMove); gn.addEventListener('mouseleave', onLeave);
     window.addEventListener('resize', onResize);
-    gsize(); gbuild(); if (rm) { gdraw(); } else { raf = requestAnimationFrame(gdraw); }
-    return () => { stopped = true; cancelAnimationFrame(raf); gn.removeEventListener('click', onClick); gn.removeEventListener('mousemove', onGMove); window.removeEventListener('resize', onResize); };
+    gsize(); gbuild(); readout(); if (rm) { gdraw(); } else { raf = requestAnimationFrame(gdraw); }
+    return () => { stopped = true; cancelAnimationFrame(raf); gn.removeEventListener('click', onClick); gn.removeEventListener('mousemove', onGMove); gn.removeEventListener('mouseleave', onLeave); window.removeEventListener('resize', onResize); };
   }, [state.genes, state.products]);
 
   // ---------- support: the EXISTING donation rails, new skin only ----------
@@ -556,7 +544,8 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
             Proven code and hard lessons are harvested as genes. A gene extracted from one product flows into every
             product born after it. Touch the network: genes in green, products in bone, connections are inheritance.</p>
           <canvas id="genome-net" ref={geneCv} />
-          <div className="gene-legend"><span className="g">● gene</span> &nbsp; <span className="p">● product</span> &nbsp; <span className="b">● gene under review</span> &nbsp; · drag to stir, hover or tap to read, click a gene to trace its children</div>
+          <div className="gene-legend" ref={geneReadout} aria-live="polite" />
+          <div className="gene-legend"><span className="g">▮ gene in the genome</span> &nbsp; <span className="b">▮ gene under review</span> &nbsp; <span className="p">● product</span> &nbsp; · one tick per gene, grouped by family; the readout above names what you touch</div>
           {typeof state.gestation === 'number' && (
             <div className="gene-legend">a capability must prove itself in repeated builds before it graduates into the genome · in gestation: <span className="g">{state.gestation}</span></div>
           )}
