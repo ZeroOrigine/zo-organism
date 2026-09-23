@@ -6,12 +6,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import type { SiteProduct } from '@/lib/siteState';
+import type { SiteProduct, Adopted } from '@/lib/siteState';
+import AdoptedShelf from '@/components/AdoptedShelf';
 
 const PAGE_SIZE = 25;
 const PAGER_THRESHOLD = 30;
 
-export default function RegistryAll({ products }: { products: SiteProduct[] }) {
+export default function RegistryAll({ products, adopted }: { products: SiteProduct[]; adopted?: Adopted[] }) {
   const [cat, setCat] = useState('all');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
@@ -80,6 +81,7 @@ export default function RegistryAll({ products }: { products: SiteProduct[] }) {
         <p className="caveat">A product is &quot;launched&quot; only after the machine walks its own front door on the live site.
           Births before August 2026 predate per-product cost attribution; their costs live in the aggregate books and are
           marked accordingly. No number is invented to fill a cell.</p>
+        <AdoptedShelf items={adopted} />
         <Link className="viewall" href="/">back to the organism</Link>
       </section>
     </main>

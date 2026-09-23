@@ -41,6 +41,38 @@ export default async function ProductCertificate({
     getCorrectionNote(params.slug),
   ]);
   const p = state?.products.find((x) => x.slug === params.slug);
+  const adopted = state?.adopted?.find((x) => x.slug === params.slug);
+  if (!p && adopted) {
+    // 2026-09-23 THE ADOPTION RECORD. Not a certificate of birth: this product
+    // was built by a human outside the pipeline. The record says so plainly and
+    // prints no cost of birth, because the ledger holds none.
+    const a = adopted;
+    return (
+      <main className="cert" style={{ opacity: 1 }}>
+        <Link className="back" href="/">back to the organism</Link>
+        <div className="frame">
+          <div className="kicker">Record of adoption · ZeroOrigine registry</div>
+          <h1>{a.name}</h1>
+          {a.tagline && <p className="tag">{a.tagline}</p>}
+          <dl>
+            <dt>Adopted</dt><dd>{a.since}</dd>
+            <dt>Category</dt><dd>{a.cat}</dd>
+            <dt>Origin</dt><dd>built by a human outside the Minds pipeline; taken into the ecosystem&apos;s care by founder order</dd>
+            <dt>Cost of birth</dt><dd>none. This is not a birth; no Mind was paid to make it.</dd>
+            <dt>Status</dt><dd><span className={'stamp ' + a.stamp[0]}>{a.stamp[1]}</span></dd>
+            <dt>Watched by</dt><dd>the product sentinel, the certificate horizon and the promise auditor, like every product on the registry</dd>
+          </dl>
+          {a.url && a.url !== '#' && (
+            <a className="visit" href={a.url} rel="noopener noreferrer">Visit {a.name}</a>
+          )}
+        </div>
+        <p className="caveat" style={{ marginTop: 18 }}>
+          This record is rendered from the machine&apos;s own registry. It is kept apart from the
+          certificates of birth on purpose: the Minds did not make this product, and the site does not count it as born.
+        </p>
+      </main>
+    );
+  }
   if (!p) notFound();
 
   return (

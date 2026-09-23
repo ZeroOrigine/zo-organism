@@ -25,5 +25,5 @@ export default async function ProductsRegistry({
   }
   const n = Number(searchParams?.scaletest || 0);
   const finalState = n > 0 && n <= 2000 ? expandForScaleTest(state, n) : state;
-  return <RegistryAll products={finalState.products} />;
+  return <RegistryAll products={finalState.products} adopted={finalState.adopted} />;
 }

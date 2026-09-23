@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dual } from '@/lib/currency';
 import GalaxyBackdrop from '@/components/GalaxyBackdrop';
 import Link from 'next/link';
+import AdoptedShelf from '@/components/AdoptedShelf';
 import type { ProofSummary, SiteState } from '@/lib/siteState';
 
 const MINDS = [
@@ -519,6 +520,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
               ))}
             </tbody>
           </table></div>
+          <AdoptedShelf items={state.adopted} compact />
           <Link className="viewall" href="/products">View the full registry · {state.products.length} products</Link>
           <p className="caveat">A product is &quot;launched&quot; only after the machine walks its own front door on the live site:
             signup, login, password reset, the core action, and checkout, or, for products built without accounts,

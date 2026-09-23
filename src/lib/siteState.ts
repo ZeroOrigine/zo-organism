@@ -12,6 +12,10 @@ export interface SiteProduct {
   tagline: string; cost: string; stamp: [string, string];
 }
 export interface Grave { died: string; name: string; slug?: string; cause: string; forward: string }
+// 2026-09-23 THE ADOPTED SHELF. A product a human built outside the pipeline and
+// the founder adopted into the ecosystem's care. Not a birth: no certificate of
+// birth, no cost of birth, never counted among the born. Shelved apart.
+export interface Adopted { since: string; name: string; url: string; slug: string; cat: string; tagline: string; stamp: [string, string] }
 export interface Gene { slug: string; d: string; status: [string, string] }
 export interface BookLine { p: string; e: string; d: string; c: string; n: string }
 export interface SiteState {
@@ -19,6 +23,7 @@ export interface SiteState {
   vitals: Vital[];
   products: SiteProduct[];
   graveyard: Grave[];
+  adopted?: Adopted[];
   genes: Gene[];
   gestation?: number | null;
   books: BookLine[];
