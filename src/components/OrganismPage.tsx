@@ -305,9 +305,18 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const DPR = Math.min(2, window.devicePixelRatio || 1);
     let GW = 0; let GH = 0; let raf = 0; let stopped = false;
-    const FAMILIES: Array<[string, RegExp]> = [
-      ['launch', /^launch-/], ['qa', /^qa-/], ['ref', /^ref-/], ['mech', /^mech-/], ['core', /./],
-    ];
+    // 2026-09-23 THE GENOME BY ESSENCE: a gene is the reusable idea of a feature
+    // a product built, so its family is its PRODUCT OF ORIGIN. Bands are the
+    // origins present in the genome; the prefix families are the fallback for
+    // a genome that has none yet.
+    const origins = Array.from(new Set(state.genes.map((g) => g.origin).filter((o): o is string => !!o)));
+    const FAMILIES: Array<[string, RegExp | string]> = origins.length
+      ? [...origins.map((o): [string, string] => [o, o]), ['other', '*']]
+      : [['launch', /^launch-/], ['qa', /^qa-/], ['ref', /^ref-/], ['mech', /^mech-/], ['core', /./]];
+    const famOf = (g: { slug: string; origin?: string }) => {
+      const i = FAMILIES.findIndex(([, m]) => typeof m === 'string' ? (m === '*' || m === g.origin) : m.test(g.slug));
+      return i < 0 ? FAMILIES.length - 1 : i;
+    };
     interface Tick { slug: string; hold: boolean; fam: number; x: number; y: number }
     interface Slot { name: string; x: number; y: number }
     let ticks: Tick[] = []; let slots: Slot[] = []; let bands: Array<{ name: string; y: number; n: number; dense: boolean }> = [];
@@ -319,11 +328,11 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       ticks = []; slots = []; bands = [];
       const grouped: Tick[][] = FAMILIES.map(() => []);
       genes.forEach((g) => {
-        const fi = FAMILIES.findIndex(([, re]) => re.test(g.slug));
+        const fi = famOf(g);
         grouped[fi].push({ slug: g.slug, hold: g.status[0] === 'hold', fam: fi, x: 0, y: 0 });
       });
       const present = grouped.map((t, i) => ({ t, i })).filter((f) => f.t.length > 0);
-      const left = GW < 760 ? 58 : 92; const right = GW - 40; const span = right - left;
+      const left = GW < 760 ? 92 : 150; const right = GW - 40; const span = right - left;
       const top = 26; const rowH = Math.min(46, (GH * 0.64) / Math.max(1, present.length));
       present.forEach((f, r) => {
         const y = top + r * rowH + rowH / 2;
@@ -344,7 +353,7 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       if (stopped) return;
       gx.clearRect(0, 0, GW, GH);
       pulse = rm ? 1 : 0.85 + Math.abs(Math.sin(Date.now() * 0.0016)) * 0.15;
-      const left = GW < 760 ? 58 : 92; const right = GW - 40;
+      const left = GW < 760 ? 92 : 150; const right = GW - 40;
       // bands
       gx.font = '12px IBM Plex Mono, monospace'; gx.textAlign = 'right'; gx.textBaseline = 'middle';
       bands.forEach((b) => {
@@ -394,7 +403,8 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
       const i = sel >= 0 ? sel : hov;
       if (i < 0) { ro.textContent = 'hover or tap a tick to read the gene · a selected gene lights its inheritance into every product born after it'; return; }
       const t = ticks[i];
-      ro.textContent = t.slug + ' · ' + (t.hold ? 'under review, tethered until its findings clear' : 'in the genome, inherited by every later birth') + ' · family ' + FAMILIES[t.fam][0];
+      const g = genes.find((x) => x.slug === t.slug);
+      ro.textContent = t.slug + ' · from ' + (g?.origin || FAMILIES[t.fam][0]) + ' · ' + (g?.status[1] || (t.hold ? 'not yet inherited' : 'in the genome'));
     };
     const nearest = (mx: number, my: number) => {
       // a tick is 2px wide; the hit target is the band's full height and half the gap to its neighbour
@@ -540,28 +550,29 @@ export default function OrganismPage({ state, proof }: { state: SiteState; proof
         </section>
 
         <section id="genome">
-          <div className="folio"><span className="no">FOLIO 04</span><h2>The genome</h2><span className="note">what the dead teach the unborn</span></div>
+          <div className="folio"><span className="no">FOLIO 04</span><h2>The genome</h2><span className="note">what each birth teaches the next</span></div>
           <p style={{ maxWidth: '62ch', color: 'var(--bone-dim)', marginBottom: 22, fontSize: 18 }}>
-            Proven code and hard lessons are harvested as genes. A gene extracted from one product flows into every
-            product born after it. Each tick is one gene on its family band; the row beneath is the latest births.
-            Touch a tick and its inheritance lights up.</p>
+            Every product leaves genes: the reusable idea, design, logic and structure of what it built, written by
+            the machine at launch, never code, never a secret. Before a new product is designed, the architect reads
+            them first. Each tick is one gene on the band of the product it came from; the row beneath is the latest
+            births. Touch a tick and its inheritance lights up.</p>
           <canvas id="genome-net" ref={geneCv} />
           <div className="gene-legend" ref={geneReadout} aria-live="polite" />
-          <div className="gene-legend"><span className="g">▮ gene in the genome</span> &nbsp; <span className="b">▮ gene under review</span> &nbsp; <span className="p">● product</span> &nbsp; · one tick per gene, grouped by family; the readout above names what you touch</div>
+          <div className="gene-legend"><span className="g">▮ gene inherited by a later birth</span> &nbsp; <span className="b">▮ gene not yet inherited</span> &nbsp; <span className="p">● product</span> &nbsp; · one tick per gene, one band per product of origin; the readout above names what you touch</div>
           {typeof state.gestation === 'number' && (
-            <div className="gene-legend">a capability must prove itself in repeated builds before it graduates into the genome · in gestation: <span className="g">{state.gestation}</span></div>
+            <div className="gene-legend">a gene is the reusable idea, structure and logic of a feature a product built, written by the machine at launch, never code, never a secret · feature modules in gestation: <span className="g">{state.gestation}</span>{typeof state.parts === 'number' && <> · built from <span className="g">{state.parts}</span> standard parts</>}</div>
           )}
           <div className="ledger" style={{ marginTop: 22 }}><table>
-            <thead><tr><th>Gene</th><th>What it carries</th><th>Status</th></tr></thead>
+            <thead><tr><th>Gene</th><th>From</th><th>The idea it carries</th><th>Status</th></tr></thead>
             <tbody>
               {previewGenes.map((g) => (
                 <tr key={g.slug}>
-                  <td className="mono">{g.slug}</td><td>{genePublicText(g)}</td>
+                  <td className="mono">{g.slug}</td><td className="mono">{g.origin || '·'}</td><td>{genePublicText(g)}</td>
                   <td><span className={'stamp ' + g.status[0]}>{g.status[1]}</span></td>
                 </tr>
               ))}
               {state.genes.length === 0 && (
-                <tr><td colSpan={3} className="mono">No genes harvested yet. The first products are still teaching.</td></tr>
+                <tr><td colSpan={4} className="mono">No genes extracted yet. The first products are still teaching.</td></tr>
               )}
             </tbody>
           </table></div>
